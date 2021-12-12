@@ -1,0 +1,1 @@
+Beschreibung Pizzeria: {{$pizzeria}}
