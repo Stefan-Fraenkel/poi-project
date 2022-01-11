@@ -94,7 +94,9 @@ class POIController extends BaseController
 
     public function create(Request $request){
         if($request->isMethod('post')) {
-            dd($request);
+            $query = 'INSERT INTO poiTable (name, strasse, plz, ort, beschreibung, oeffnungszeiten, website, foto) VALUES (' . $request->name . ', ' . $request->street . ', ' . $request->plz . ', ' . $request->city . ', ' . $request->description . ', ' . $request->openingHours . ', '. $request->website . ', ' . $request->photo .')';
+            DB::unprepared($query);
+            return $this->index();
         }
         else return view('poi.create');
     }
