@@ -7,6 +7,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class POIController extends BaseController
 {
@@ -89,6 +90,13 @@ class POIController extends BaseController
 */
        // dd($outputs);
         return view('poi.index') -> with('pois', $outputs);
+    }
+
+    public function create(Request $request){
+        if($request->isMethod('post')) {
+            dd($request);
+        }
+        else return view('poi.create');
     }
 
     public function getshortPOI($poiid): array

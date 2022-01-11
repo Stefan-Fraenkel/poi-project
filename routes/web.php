@@ -26,7 +26,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::get('/test', [TestController::class, 'testFunction']);
 
-    Route::get('/poi', [POIController::class, 'index']);
+    Route::prefix('poi')->group(function () {
+        Route::get('', [POIController::class, 'index']);
+        Route::match(['get', 'post'],'/create', [POIController::class, 'create']);
+    });
+
+
+
     Route::get('/setup', [POIController::class, 'initialSetup']);
 
 
