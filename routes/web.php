@@ -26,7 +26,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::get('/test', [TestController::class, 'testFunction']);
 
-    Route::get('/test2', [POIController::class, 'getOverview']);
+    Route::get('/poi', [POIController::class, 'index']);
     Route::get('/setup', [POIController::class, 'initialSetup']);
 
 
