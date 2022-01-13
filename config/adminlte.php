@@ -237,6 +237,20 @@ return [
         ],
 
         // Sidebar items:
+        ['header' => 'FUNKTIONEN'],
+        [
+            'text' => 'Suche',
+            'url'  => '/category',
+            'icon' => 'fas fa-fw fa-search',
+            'icon_color' => 'green',
+        ],
+        [
+            'text' => 'POI Eintragen',
+            'url'  => '/poi/create',
+            'icon' => 'fas fa-fw fa-plus',
+            'icon_color' => 'purple',
+        ],
+
         ['header' => 'account_settings'],
         [
             'text' => 'Mein Konto',
@@ -250,12 +264,7 @@ return [
             'icon' => 'fas fa-fw fa-users',
             'icon_color' => 'yellow',
         ],
-        [
-            'text' => 'Einkaufen',
-            'url'  => '/categoryEinkaufen',
-            'icon' => 'fas fa-fw fa-store',
-            'icon_color' => 'purple',
-        ],
+
            ],
 
     /*
