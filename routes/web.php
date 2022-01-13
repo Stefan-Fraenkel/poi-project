@@ -24,20 +24,14 @@ Route::match(['get', 'post'], '/register', function () {
 //logged in
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
-    Route::get('/test', [TestController::class, 'testFunction']);
-
     Route::prefix('poi')->group(function () {
         Route::get('', [POIController::class, 'index']);
         Route::match(['get', 'post'],'/create', [POIController::class, 'create']);
     });
 
-
-
     Route::get('/setup', [POIController::class, 'initialSetup']);
 
-
-    Route::get('/PG', [POIController::class, 'outputPG']);
-    Route::get('/categoryEinkaufen', [POIController::class, 'categoryEinkaufen' ]);
+    Route::match(['get', 'post'], '/category', [POIController::class, 'categoryFilter']);
 
     Route::get('/dashboard', function () {
         return view('dashboard');
