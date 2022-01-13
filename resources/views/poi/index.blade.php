@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-    <h2 class="h4 font-weight-bold">Übersicht aller POIs</h2>
+    <h2 class="h4 font-weight-bold">Übersicht POIs: {{$category}}</h2>
 @stop
 
 @section('content')
