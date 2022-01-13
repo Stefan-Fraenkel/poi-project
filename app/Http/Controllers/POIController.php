@@ -27,6 +27,14 @@ class POIController extends BaseController
         DB::unprepared('INSERT INTO nutzerTable (benutzername, passwort, admin) VALUES ("stefan", "asf45s8e", true), ("theresa", "saohf35", true), ("testMann", "aaf435", false), ("bernd", "agd98d#", false), ("susi", "aojf354", false)');
         DB::unprepared('INSERT INTO nutzerPoiTable (nutzerID, poiID, bewertung, referenz) VALUES (1,4,4.5, "tolle aussicht"), (1,3,6.0, "gutes Essen"), (2,4,1.5, "schlechter Service"), (3,2,10.0, "Alles top, gerne Wieder"), (4,1,8.5, "mega Stimmung und nettes Personal"), (5,5,5.5, "war oke"), (5,3,7.0, "geeignet für Familien")');
 
+        DB::unprepared('ALTER TABLE poitable ADD COLUMN lat DOUBLE(9,6)');
+        DB::unprepared('ALTER TABLE poitable ADD COLUMN lng DOUBLE(9,6)');
+
+        DB::unprepared('INSERT INTO poikategorienTable (poiID, kategorienID) VALUES (1, 1), (3, 1)');
+        DB::unprepared('INSERT INTO poikategorienTable (poiID, kategorienID) VALUES (4, 2), (5, 2)');
+        DB::unprepared('INSERT INTO poikategorienTable (poiID, kategorienID) VALUES (2, 3), (3, 3)');
+        DB::unprepared('INSERT INTO poikategorienTable (poiID, kategorienID) VALUES (4, 4)');
+        DB::unprepared('INSERT INTO poikategorienTable (poiID, kategorienID) VALUES (2, 5), (5, 5)');
         */
 
         /* old:
@@ -48,48 +56,79 @@ class POIController extends BaseController
      //   DB::unprepared('CREATE TABLE nutzerTable (nutzerID int primary key auto_increment, benutzername varchar(10), passwort varchar(10), avatar varchar(2048), interneNotiz varchar (400),  admin boolean)');
 
 
-//echo 'Hallo';
          *
          */
 
 
-        return view('dashboard') -> with('ausgabe' , 'Hallo 2');
+
+
+        return view('dashboard');
 
     }
 
-    public function outputPG(){
-      // var_dump(DB::select('select * from poitable'));
-     //   dd(DB::select('select * from poitable WHERE poiid = 2'));
-        $result = DB::select('select * from poitable WHERE poiid = 2');
-        $result = $result[0] -> beschreibung;
-       return view('poi.showPG') -> with('pizzeria' , $result);
+    public function categoryFilter(Request $request){
+        if($request->isMethod('post')) {
+            $resultsCategory = array();
+            foreach ($request->categories as $category) {
+                $query = 'select * from poitable JOIN poikategorientable ON poitable.poiID = poikategorientable.poiID JOIN kategorientable ON poikategorientable.kategorienID = kategorientable.kategorienID  where kategorientable.kategorienName = "' . $category . '"';
+                $results = DB::select($query);
+
+                /*
+                $query = 'select * from kategorientable where kategorienName = "' . $category . '"';
+                $categoryName = DB::select($query);
+                $categoryName = $categoryName[0] -> kategorienName;
+                */
+
+                $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
+
+            };
+
+            if ($resultsCategory) {
+                return $this->index($resultsCategory, 'Suche');
+            }
+            return view('dashboard');
+        }
+
+        else {
+            $query = 'select * from kategorientable';
+            $categories = DB::select($query);
+
+            $output = array();
+            foreach ($categories as $category) {
+                $output[] = $category->kategorienName;
+            }
+
+            return view('poi.category')->with('categories', $output);
+        }
 
     }
-    public function categoryEinkaufen(){
-        $resultCategory = DB::select('select * from kategorientable where kategorienid = 4');
-        $resultCategory = $resultCategory[0] -> kategorienName;
 
-        return view('poi.showEinkaufenCategory') -> with('einkaufen', $resultCategory);
-
+    private function arrayMergeUnique($base_array, $add_array): array
+    {
+        if ($base_array){
+            foreach ($add_array as $key => $value){
+                foreach ($base_array as $base_value){
+                    if ($base_value->poiID == $value->poiID){
+                    unset($add_array[$key]);
+                    }
+                }
+            }
+                  return array_merge_recursive($base_array, $add_array);
+        }
+        else return $add_array;
     }
 
-    public function index(){
-        $query = 'select * from poitable';
-        $results = DB::select($query);
+    public function index($results=null, $category='Alle'){
+        if ($results == null) {
+            $query = 'select * from poitable';
+            $results = DB::select($query);
+        }
         $outputs = array();
         foreach ($results as $result) {
             $entry = $this->getshortPOI($result -> poiID);
             array_push($outputs, $entry[0]);
         }
-        /*
-        $i=0;
-        foreach ($outputs as $output) {
-            $i++;
-            echo $i . '. POI: <b>' . $output->name . ' </b><br> Beschreibung: ' . $output->beschreibung . '<br> Durchschnittsbewertung: ' . $output->durchschnittsbewertung . '<br> Bildlink: ' . $output->foto . '<br><br><br>';
-                    };
-*/
-       // dd($outputs);
-        return view('poi.index') -> with('pois', $outputs);
+        return view('poi.index') -> with('pois', $outputs) -> with('category', $category);
     }
 
     public function create(Request $request){
