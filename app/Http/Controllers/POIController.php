@@ -67,7 +67,7 @@ class POIController extends BaseController
     }
 
     public function categoryFilter(Request $request){
-        if($request->isMethod('post')) {
+        if($request->isMethod('post') && $request->categories) {
             $resultsCategory = array();
             foreach ($request->categories as $category) {
                 $query = 'select * from poitable JOIN poikategorientable ON poitable.poiID = poikategorientable.poiID JOIN kategorientable ON poikategorientable.kategorienID = kategorientable.kategorienID  where kategorientable.kategorienName = "' . $category . '"';
@@ -83,10 +83,7 @@ class POIController extends BaseController
 
             };
 
-            if ($resultsCategory) {
-                return $this->index($resultsCategory, 'Suche');
-            }
-            return view('dashboard');
+            return $this->index($resultsCategory, 'Suche');
         }
 
         else {
