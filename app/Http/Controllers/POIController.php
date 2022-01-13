@@ -66,8 +66,25 @@ class POIController extends BaseController
 
     }
 
-    public function categoryFilter(Request $request){
-        if($request->isMethod('post') && $request->categories) {
+    public function searchPOIs(Request $request) {
+        $output = array();
+        if($request->categories) {
+             $output = $this->arrayMergeUnique($output, $this->categoryFilter($request));
+        }
+        if($request->ratings) {
+            $output = $this->arrayMergeUnique($output, $this->ratingsFilter($request));
+        }
+        if($request->distance) {
+            $output = $this->arrayMergeUnique($output, $this->distanceFilter($request));
+        }
+        if($request->categories || $request->ratings || $request->distance) {
+            return $this->index($output, 'Suche');
+        }
+        else return $this->categoryIndex();
+    }
+
+
+    private function categoryFilter(Request $request){
             $resultsCategory = array();
             foreach ($request->categories as $category) {
                 $query = 'select * from poitable JOIN poikategorientable ON poitable.poiID = poikategorientable.poiID JOIN kategorientable ON poikategorientable.kategorienID = kategorientable.kategorienID  where kategorientable.kategorienName = "' . $category . '"';
@@ -83,22 +100,30 @@ class POIController extends BaseController
 
             };
 
-            return $this->index($resultsCategory, 'Suche');
+            return $resultsCategory;
         }
 
-        else {
-            $query = 'select * from kategorientable';
-            $categories = DB::select($query);
-
-            $output = array();
-            foreach ($categories as $category) {
-                $output[] = $category->kategorienName;
-            }
-
-            return view('poi.category')->with('categories', $output);
-        }
-
+    public function ratingsFilter(Request $request){
+        $resultsRating = null;
+        return $resultsRating;
     }
+    public function distanceFilter(Request $request){
+        $resultsDistance = null;
+        return $resultsDistance;
+    }
+
+    public function categoryIndex(){
+        $query = 'select * from kategorientable';
+        $categories = DB::select($query);
+
+        $output = array();
+        foreach ($categories as $category) {
+            $output[] = $category->kategorienName;
+        }
+
+        return view('poi.category')->with('categories', $output);
+    }
+
 
     private function arrayMergeUnique($base_array, $add_array): array
     {

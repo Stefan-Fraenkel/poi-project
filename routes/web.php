@@ -31,7 +31,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::get('/setup', [POIController::class, 'initialSetup']);
 
-    Route::match(['get', 'post'], '/category', [POIController::class, 'categoryFilter']);
+    Route::get('/category', [POIController::class, 'categoryIndex']);
+    Route::post('/category', [POIController::class, 'searchPOIs']);
 
     Route::get('/dashboard', function () {
         return view('dashboard');
