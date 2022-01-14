@@ -245,6 +245,12 @@ return [
             'icon_color' => 'green',
         ],
         [
+            'text' => 'Meine Bewertungen',
+            'url'  => '/poi/user',
+            'icon' => 'fas fa-fw fa-star',
+            'icon_color' => 'yellow',
+        ],
+        [
             'text' => 'POI Eintragen',
             'url'  => '/poi/create',
             'icon' => 'fas fa-fw fa-plus',
@@ -262,7 +268,7 @@ return [
             'text' => 'Nutzerverwaltung',
             'url'  => '/admin/user',
             'icon' => 'fas fa-fw fa-users',
-            'icon_color' => 'yellow',
+            'icon_color' => 'lightblue',
         ],
 
            ],

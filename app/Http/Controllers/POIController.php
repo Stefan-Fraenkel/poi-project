@@ -107,6 +107,13 @@ class POIController extends BaseController
 
     }
 
+    public function userPOI(){
+        $query = 'select * from pois JOIN user_has_poi_ratings ON pois.id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
+        $results = DB::select($query);
+      //  dd($results);
+        return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
+    }
+
     public function searchPOIs(Request $request) {
         $output = array();
         if($request->categories) {
