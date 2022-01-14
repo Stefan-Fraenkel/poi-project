@@ -21,6 +21,9 @@ Route::match(['get', 'post'], '/register', function () {
     return redirect('/');
 });
 
+//Route::get('/setup', [POIController::class, 'initialSetup']);
+Route::get('/test', [POIController::class, 'test']);
+
 //logged in
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
@@ -29,7 +32,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::match(['get', 'post'],'/create', [POIController::class, 'create']);
     });
 
-    Route::get('/setup', [POIController::class, 'initialSetup']);
+    Route::get('/create', [POIController::class, 'createPOI']);
 
     Route::get('/category', [POIController::class, 'categoryIndex']);
     Route::post('/category', [POIController::class, 'searchPOIs']);
