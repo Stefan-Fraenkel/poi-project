@@ -107,6 +107,34 @@ class POIController extends BaseController
 
     }
 
+    public function filterForEach()
+    {
+        $query = 'select * from nutzerpoitable';
+        $results = DB::select($query);
+        $outputs = array();
+        foreach($results as $result){
+            $input = $this->filterRatings($result -> poiID);
+            array_push($outputs, $input);
+        }
+        // dd($outputs[0][0]->durchschnittsbewertung);
+        //dd($outputs);
+
+        return view('poi.showFilterRating') -> with ('theresa', $outputs);
+
+    }
+
+    public function filterRatings($poiid): array
+    {
+        $filterRating = 'select COUNT(*) AS number from nutzerpoitable where poiid = ' . $poiid;
+        $divisor = DB::select($filterRating);
+        $divisor = $divisor[0]->number;
+        $query = ('select SUM(nutzerpoitable.bewertung)/' . $divisor . ' AS durchschnittsbewertung from poitable join nutzerpoitable on poitable.poiID = nutzerpoitable.poiID where nutzerpoitable.poiid = ' . $poiid);
+        $results = DB::select($query);
+        $durchschnitt = $results[0] -> durchschnittsbewertung;
+        //dd($durchschnitt);
+        return DB::select($query);
+    }
+
     public function userPOI(){
         $query = 'select * from pois JOIN user_has_poi_ratings ON pois.id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
         $results = DB::select($query);
