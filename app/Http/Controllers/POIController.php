@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class POIController extends BaseController
 {
@@ -15,17 +18,54 @@ class POIController extends BaseController
 
     public function initialSetup () {
 
+        /* new new:
+
+        $entries = [['name' => 'Stefan Fränkel', 'email' => 'stefan@genxtreme.de', 'password' => '1234'],['name' => 'Theresa Schwarzmann', 'email' => 'Theresa-Sch@t-online.de', 'password' => '1234'], ['name' => 'Tom Test', 'email' => 'Tom@test.de', 'password' => '1234'], ['name' => 'Max Mustermann', 'email' => 'Max@muster.de', 'password' => '1234'], ['name' => 'Klaus Probieren', 'email' => 'klaus@probieren.de', 'password' => '1234']];
+
+        foreach ($entries as $entry) {
+            $user = new User();
+            $user->name = $entry['name'];
+            $user->email = $entry['email'];
+            $user->password = Hash::make($entry['password']);
+            $user->save();
+        }
+
+
+
+        DB::unprepared('INSERT INTO pois (poi_name, street, zipcode, city, description, open, website, photo, pois.long, lat) VALUES ("Pizzeria Gargano", "Badeweg 3", 87435, "Kempten", "Nette Pizzaria, mit kleiner Sonnenterrasse...", "Täglich 12:00 Uhr bis 21:00 Uhr", "https://pizza-gargano.de/", "https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260", 47.722115, 10.336324), ("Park Theater", "Seeweg 5", 87435, "Kempten", "Nachtclub mit wechselnden DJs und Happy-Hour von 23:00 Uhr - 24:00 Uhr", "Freitag + Samstag von 22:00 Uhr bis 05:00 Uhr", "https://parktheater.de/", "https://images.pexels.com/photos/2114365/pexels-photo-2114365.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", 47.725743, 10.312395 ), ("Naruto Sushi", "Wengen 4", 87435, "Kempten", "Sushi Spezialitäten aus hochqualitativem Fisch.", "Dienstag bis Sonntag von 11:00 Uhr bis 22:00 Uhr", "https://naruto-sushi.de/", "https://images.pexels.com/photos/2098085/pexels-photo-2098085.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260", 47.726072, 10.313947), ("Fitness Park Dream Fit", "Sportstrasse 21", 87435, "Kempten", "Moderner Fitnesspark mit vielen Geräten und professionellem Team.", "Täglich von 06:00 Uhr bis 23:00 Uhr", "https://dream-fit.de/", "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", 47.730676, 10.299088), ("Kinder Kletterpark", "Rattenweg 56", 87435, "Kempten", "Indoor Klettergarten für Kinder mit Selbstbedienungs Restaurant.", "Donnerstag bis Sonntag von 10:00 Uhr bis 18:00 Uhr", "https://kletterpark-hoch-hinaus.de/", "https://images.pexels.com/photos/5383729/pexels-photo-5383729.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", 47.671298, 10.254998)');
+        DB::unprepared('INSERT INTO poi_categories (cat_name) VALUES ("Restaurant"), ("Sport"), ("Nachtleben"), ("Einkaufen"), ("Erleben")');
+        DB::unprepared('INSERT INTO user_has_poi_ratings (user_id, poi_id, score, comment) VALUES (1,4,4.5, "tolle aussicht"), (1,3,6.0, "gutes Essen"), (2,4,1.5, "schlechter Service"), (3,2,10.0, "Alles top, gerne Wieder"), (4,1,8.5, "mega Stimmung und nettes Personal"), (5,5,5.5, "war oke"), (5,3,7.0, "geeignet für Familien")');
+
+
+        DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (1, 1), (3, 1)');
+        DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (4, 2), (5, 2)');
+        DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (2, 3), (3, 3)');
+        DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (4, 4)');
+        DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (2, 5), (5, 5)');
+
+        */
+
         /* new:
         DB::unprepared('CREATE TABLE poiTable (poiID int primary key auto_increment, name varchar(100), strasse varchar(50), plz int, ort varchar(50), beschreibung varchar(200), oeffnungszeiten varchar (100), website varchar(100), foto varchar(2048))');
         DB::unprepared('CREATE TABLE kategorienTable (kategorienID int primary key auto_increment, kategorienName varchar(100))');
         DB::unprepared('CREATE TABLE poiKategorienTable (poiID int, kategorienID int, foreign key (poiID) references poiTable(poiID), foreign key (kategorienID) references kategorienTable(kategorienID))');
-        DB::unprepared('CREATE TABLE nutzerTable (nutzerID int primary key auto_increment, benutzername varchar(10), passwort varchar(10), avatar varchar(2048), interneNotiz varchar (400),  admin boolean)');
-        DB::unprepared('CREATE TABLE nutzerPoiTable (nutzerID int, poiID int, foreign key (nutzerID) references nutzerTable(nutzerID), foreign key (poiID) references poiTable(poiID), bewertung float, referenz varchar(100))');
+        //DB::unprepared('CREATE TABLE nutzerTable (nutzerID int primary key auto_increment, benutzername varchar(10), passwort varchar(10), avatar varchar(2048), interneNotiz varchar (400),  admin boolean)');
+        DB::unprepared('CREATE TABLE userpoitable (userID int, poiID int, foreign key (userID) references users(id), foreign key (poiID) references poiTable(poiID), bewertung float, referenz varchar(100))');
 
         DB::unprepared('INSERT INTO poiTable (name, strasse, plz, ort, beschreibung, oeffnungszeiten, website, foto) VALUES ("Pizzaria Gargano", "Badeweg 3", 10997, "Berlin", "Nette Pizzaria, mit kleiner Sonnenterrasse...", "Täglich 12:00 Uhr bis 21:00 Uhr", "https://pizza-gargano.de/", "https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260"), ("Park Theater", "Seeweg 5", 10997, "Berlin", "Nachtclub mit wechselnden DJs und Happy-Hour von 23:00 Uhr - 24:00 Uhr", "Freitag + Samstag von 22:00 Uhr bis 05:00 Uhr", "https://parktheater.de/", "https://images.pexels.com/photos/2114365/pexels-photo-2114365.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"), ("Naruto Sush", "Wengen 4", 10997, "Berlin", "Sushi Spezialitäten aus hochqualitativem Fisch.", "Dienstag bis Sonntag von 11:00 Uhr bis 22:00 Uhr", "https://naruto-sushi.de/", "https://images.pexels.com/photos/2098085/pexels-photo-2098085.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260"), ("Fitness Park Dream Fit", "Sportstrasse 21", 10997, "Berlin", "Moderner Fitnesspark mit vielen Geräten und professionellem Team.", "Täglich von 06:00 Uhr bis 23:00 Uhr", "https://dream-fit.de/", "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"), ("Kinder Kletterpark", "Rattenweg 56", 10997, "Berlin", "Indoor Klettergarten für Kinder mit Selbstbedienungs Restaurant.", "Donnerstag bis Sonntag von 10:00 Uhr bis 18:00 Uhr", "https://kletterpark-hoch-hinaus.de/", "https://images.pexels.com/photos/5383729/pexels-photo-5383729.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260")');
         DB::unprepared('INSERT INTO kategorienTable (kategorienName) VALUES ("Restaurant"), ("Sport"), ("Nachtleben"), ("Einkaufen"), ("Erleben")');
-        DB::unprepared('INSERT INTO nutzerTable (benutzername, passwort, admin) VALUES ("stefan", "asf45s8e", true), ("theresa", "saohf35", true), ("testMann", "aaf435", false), ("bernd", "agd98d#", false), ("susi", "aojf354", false)');
+        //DB::unprepared('INSERT INTO nutzerTable (benutzername, passwort, admin) VALUES ("stefan", "asf45s8e", true), ("theresa", "saohf35", true), ("testMann", "aaf435", false), ("bernd", "agd98d#", false), ("susi", "aojf354", false)');
         DB::unprepared('INSERT INTO nutzerPoiTable (nutzerID, poiID, bewertung, referenz) VALUES (1,4,4.5, "tolle aussicht"), (1,3,6.0, "gutes Essen"), (2,4,1.5, "schlechter Service"), (3,2,10.0, "Alles top, gerne Wieder"), (4,1,8.5, "mega Stimmung und nettes Personal"), (5,5,5.5, "war oke"), (5,3,7.0, "geeignet für Familien")');
+
+        $entries = [['name' => 'Stefan Fränkel', 'email' => 'stefan@genxtreme.de', 'password' => '1234'],['name' => 'Theresa Schwarzmann', 'email' => 'Theresa@test.de', 'password' => '1234'], ['name' => 'Tom Test', 'email' => 'Tom@test.de', 'password' => '1234'], ['name' => 'Max Mustermann', 'email' => 'Max@muster.de', 'password' => '1234'], ['name' => 'Klaus Probieren', 'email' => 'klaus@probieren.de', 'password' => '1234']];
+
+        foreach ($entries as $entry) {
+            $user = new User();
+            $user->name = $entry['name'];
+            $user->email = $entry['email'];
+            $user->password = Hash::make($entry['password']);
+            $user->save();
+        }
 
         DB::unprepared('ALTER TABLE poitable ADD COLUMN lat DOUBLE(9,6)');
         DB::unprepared('ALTER TABLE poitable ADD COLUMN lng DOUBLE(9,6)');
@@ -60,6 +100,7 @@ class POIController extends BaseController
          */
 
 
+      //  DB::unprepared('CREATE TABLE userpoitable (userID bigint default null, poiID int, foreign key (poiID) references poiTable(poiID), bewertung float, referenz varchar(100))');
 
 
         return view('dashboard');
@@ -87,15 +128,8 @@ class POIController extends BaseController
     private function categoryFilter(Request $request){
             $resultsCategory = array();
             foreach ($request->categories as $category) {
-                $query = 'select * from poitable JOIN poikategorientable ON poitable.poiID = poikategorientable.poiID JOIN kategorientable ON poikategorientable.kategorienID = kategorientable.kategorienID  where kategorientable.kategorienName = "' . $category . '"';
+                $query = 'select * from pois JOIN poi_has_categories ON pois.id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.id  where poi_categories.cat_name = "' . $category . '"';
                 $results = DB::select($query);
-
-                /*
-                $query = 'select * from kategorientable where kategorienName = "' . $category . '"';
-                $categoryName = DB::select($query);
-                $categoryName = $categoryName[0] -> kategorienName;
-                */
-
                 $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
 
             };
@@ -113,41 +147,49 @@ class POIController extends BaseController
     }
 
     public function categoryIndex(){
-        $query = 'select * from kategorientable';
+        $query = 'select * from poi_categories';
         $categories = DB::select($query);
 
         $output = array();
         foreach ($categories as $category) {
-            $output[] = $category->kategorienName;
+            $output[] = $category->cat_name;
         }
 
         return view('poi.category')->with('categories', $output);
     }
 
+    public function ratePOI(){
 
-    private function arrayMergeUnique($base_array, $add_array): array
-    {
-        if ($base_array){
-            foreach ($add_array as $key => $value){
-                foreach ($base_array as $base_value){
-                    if ($base_value->poiID == $value->poiID){
-                    unset($add_array[$key]);
+        $query = 'select * from pois JOIN poi_has_categories ON pois.id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.id  where poi_categories.cat_name = "' . $category . '"';
+        $results = DB::select($query);
+        return redirect();
+    }
+
+        private function arrayMergeUnique($base_array, $add_array): array
+        {
+            if ($base_array) {
+                foreach ($add_array as $key => $value) {
+                    foreach ($base_array as $base_value) {
+                        if ($base_value->poi_name == $value->poi_name) {
+                            unset($add_array[$key]);
+
+                        }
                     }
                 }
-            }
-                  return array_merge_recursive($base_array, $add_array);
+                return array_merge_recursive($base_array, $add_array);
+            } else {
+                return $add_array;
         }
-        else return $add_array;
     }
 
     public function index($results=null, $category='Alle'){
         if ($results == null) {
-            $query = 'select * from poitable';
+            $query = 'select * from pois';
             $results = DB::select($query);
         }
         $outputs = array();
         foreach ($results as $result) {
-            $entry = $this->getshortPOI($result -> poiID);
+            $entry = $this->getshortPOI($result -> poi_id);
             array_push($outputs, $entry[0]);
         }
         return view('poi.index') -> with('pois', $outputs) -> with('category', $category);
@@ -155,20 +197,19 @@ class POIController extends BaseController
 
     public function create(Request $request){
         if($request->isMethod('post')) {
-          //  dd($request);
-            $query = 'INSERT INTO poiTable (name, strasse, plz, ort, beschreibung, oeffnungszeiten, website, foto) VALUES ("' . $request->name . '", "' . $request->street . '", "' . $request->plz . '", "' . $request->city . '", "' . $request->description . '", "' . $request->openingHours . '", "'. $request->website . '", "' . $request->photo .'")';
+            $query = 'INSERT INTO pois (poi_name, street, zipcode, city, description, open, website, photo, pois.long, lat) VALUES ("' . $request->poi_name . '", "' . $request->street . '", "' . $request->zipcode . '", "' . $request->city . '", "' . $request->description . '", "' . $request->openingHours . '", "'. $request->website . '", "' . $request->photo . $request->long . '", "' . $request->lat . '")';
             DB::unprepared($query);
             return $this->index();
         }
         else return view('poi.create');
     }
 
-    public function getshortPOI($poiid): array
+    public function getshortPOI($poi_id): array
     {
-        $query = 'select COUNT(*) AS number from nutzerpoitable where poiid = ' . $poiid;
+        $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
         $divisor = DB::select($query);
         $divisor = $divisor[0] -> number;
-        $query = 'select poitable.name, poitable.beschreibung, poitable.foto, SUM(nutzerpoitable.bewertung)/' . $divisor . ' AS durchschnittsbewertung from poitable LEFT JOIN nutzerpoitable ON poitable.poiID = nutzerpoitable.poiID WHERE poitable.poiid = '  . $poiid;
+        $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois LEFT JOIN user_has_poi_ratings ON pois.id = user_has_poi_ratings.poi_id WHERE pois.id = '  . $poi_id;
         return DB::select($query);
     }
 
