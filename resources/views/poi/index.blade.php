@@ -10,12 +10,12 @@
             <div class="col">
                 @foreach($pois as $poi)
                     <div class="card" style="width: 18rem;">
-                        <img src="{{$poi->foto}}"
+                        <img src="{{$poi->photo}}"
                              class="card-img-top" alt="fallback bild">
                         <div class="card-body">
-                            <h5 class="card-title">{{$poi->name}}</h5>
-                            <p class="card-text">{{$poi->beschreibung}}</p>
-                            <p class="poi-rating-text"><i class="rating-icon fas fa-star"></i>{{$poi->durchschnittsbewertung}}
+                            <h5 class="card-title">{{$poi->poi_name}}</h5>
+                            <p class="card-text">{{$poi->description}}</p>
+                            <p class="poi-rating-text"><i class="rating-icon fas fa-star"></i>{{$poi->rating}}
                                 Sterne-Bewertung</p>
                             <div class="card-footer">
                                 <a href="#" class="btn btn-outline-dark poi-more-btn">Mehr erfahren</a>
