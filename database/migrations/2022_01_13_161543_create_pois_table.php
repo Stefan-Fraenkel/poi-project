@@ -14,7 +14,7 @@ class CreatePoisTable extends Migration
     public function up()
     {
         Schema::create('pois', function (Blueprint $table) {
-            $table->id();
+            $table->id('poi_id');
             $table->string('poi_name')->unique();
             $table->string('street');
             $table->integer('zipcode');

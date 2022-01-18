@@ -14,7 +14,7 @@ class CreatePoiCategoriesTable extends Migration
     public function up()
     {
         Schema::create('poi_categories', function (Blueprint $table) {
-            $table->id();
+            $table->id('cat_id');
             $table->string('cat_name');
         });
     }
