@@ -16,6 +16,15 @@ class POIController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    private $filters = [ 'categories', 'rating', 'distance'];
+    /*
+     * to add a filter write a function that accepts a request and an array as parameters and returns an array
+     * standard value for array should be "null"
+     *      example: private function nameFilter(Request $request, $output=null): array
+     * then add the part of its name before "Filter" in the array $filters
+     *      example: $filters = [ 'filter1', 'filter2', 'name']
+     */
+
     public function initialSetup () {
 
         /* new new:
@@ -135,86 +144,7 @@ class POIController extends BaseController
         return DB::select($query);
     }
 
-    public function userPOI(){
-        $query = 'select * from pois JOIN user_has_poi_ratings ON pois.id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
-        $results = DB::select($query);
-        return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
-    }
 
-    public function searchPOIs(Request $request) {
-        $output = array();
-        if($request->categories) {
-             $output = $this->arrayMergeUnique($output, $this->categoryFilter($request));
-        }
-        if($request->ratings) {
-            $output = $this->arrayMergeUnique($output, $this->ratingsFilter($request));
-        }
-        if($request->distance) {
-            $output = $this->arrayMergeUnique($output, $this->distanceFilter($request));
-        }
-        if($request->categories || $request->ratings || $request->distance) {
-            return $this->index($output, 'Suche');
-        }
-        else return $this->categoryIndex();
-    }
-
-
-    private function categoryFilter(Request $request){
-            $resultsCategory = array();
-            foreach ($request->categories as $category) {
-                $query = 'select * from pois JOIN poi_has_categories ON pois.id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.id  where poi_categories.cat_name = "' . $category . '"';
-                $results = DB::select($query);
-                $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
-
-            };
-
-            return $resultsCategory;
-        }
-
-    public function ratingsFilter(Request $request){
-        $resultsRating = null;
-        return $resultsRating;
-    }
-    public function distanceFilter(Request $request){
-        $resultsDistance = null;
-        return $resultsDistance;
-    }
-
-    public function categoryIndex(){
-        $query = 'select * from poi_categories';
-        $categories = DB::select($query);
-
-        $output = array();
-        foreach ($categories as $category) {
-            $output[] = $category->cat_name;
-        }
-
-        return view('poi.category')->with('categories', $output);
-    }
-
-    public function ratePOI(){
-
-        $query = 'select * from pois JOIN poi_has_categories ON pois.id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.id  where poi_categories.cat_name = "' . $category . '"';
-        $results = DB::select($query);
-        return redirect();
-    }
-
-        private function arrayMergeUnique($base_array, $add_array): array
-        {
-            if ($base_array) {
-                foreach ($add_array as $key => $value) {
-                    foreach ($base_array as $base_value) {
-                        if ($base_value->poi_name == $value->poi_name) {
-                            unset($add_array[$key]);
-
-                        }
-                    }
-                }
-                return array_merge_recursive($base_array, $add_array);
-            } else {
-                return $add_array;
-        }
-    }
 
     public function index($results=null, $category='Alle'){
         if ($results == null) {
@@ -238,12 +168,191 @@ class POIController extends BaseController
         else return view('poi.create');
     }
 
-    public function getshortPOI($poi_id): array
+    public function userPOI(){
+        $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
+        $results = DB::select($query);
+        return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
+    }
+
+    public function categoryIndex(){
+        $query = 'select * from poi_categories';
+        $categories = DB::select($query);
+
+        $output = array();
+        foreach ($categories as $category) {
+            $output[] = $category->cat_name;
+        }
+
+        return view('poi.category')->with('categories', $output);
+    }
+
+    public function ratePOI(){
+        $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '"';
+        $results = DB::select($query);
+        return redirect();
+    }
+
+    public function searchPOIs(Request $request) {
+        $output = array();
+        foreach ($this->filters as $filter){
+            $filterFunction = $filter . 'Filter';
+            if($request->$filter) {
+                if (!$output){
+                    $output = $this->arrayMergeUnique($output, $this->{$filterFunction}($request));
+                }
+                else {
+                    $output = $this->arrayFilter($output, $this->{$filterFunction}($request, $output));
+                }
+            }
+        }
+        if($output) {
+            return $this->index($output, 'Suche');
+        }
+        else return $this->categoryIndex();
+    }
+
+    private function categoriesFilter(Request $request, $output=null): array
+    {
+        $resultsCategory = array();
+        if ($output) {
+            foreach ($request->categories as $category) {
+                foreach ($output as $entry) {
+                    $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '" and pois.poi_id = "'. $entry->poi_id . '"';
+                    $results = DB::select($query);
+                    $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
+                }
+            };
+        }
+        else {
+            foreach ($request->categories as $category) {
+                $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '"';
+                $results = DB::select($query);
+                $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
+            };
+        }
+        return $resultsCategory;
+    }
+
+    private function ratingFilter(Request $request, $output=null): array
+    {
+        $resultsRating = array();
+        if ($output) {
+            $results =  $output;
+        }
+        else {
+            $query = 'select distinct (poi_id) from user_has_poi_ratings';
+            $results = DB::select($query);
+        }
+        foreach($results as $result){
+            $rating = $this->calculateRating($result->poi_id);
+            if ($rating >= $request->rating) {
+                $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = '  . $result->poi_id;
+                $reply = DB::select($query);
+                $resultsRating = $this->arrayMergeUnique($resultsRating, $reply);
+            }
+        }
+        return $resultsRating;
+    }
+
+    private function distanceFilter(Request $request, $output=null): array
+    {
+        $resultsDistance = array();
+       // dd($request);
+        /*
+        if ($output) {
+            foreach ($request->categories as $category) {
+                foreach ($output as $entry) {
+                    $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '" and pois.poi_id = "'. $entry->poi_id . '"';
+                    $results = DB::select($query);
+                    $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
+                }
+            };
+        }
+        else {
+            foreach ($request->distances as $distance) {
+                $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '"';
+                $results = DB::select($query);
+                $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
+            };
+        }
+*/
+
+
+
+        $latitude = 10;
+        $longitude = 47;
+       // $poi_id = 1;
+
+        $distance = 86.7;
+
+        $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance FROM pois HAVING distance >= ' . $distance . ';'; //https://en.wikipedia.org/wiki/Great-circle_distance; https://stackoverflow.com/questions/574691/mysql-great-circle-distance-haversine-formula
+
+
+       // $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance FROM pois WHERE pois.poi_id = ' . $poi_id . ';'; //https://en.wikipedia.org/wiki/Great-circle_distance; https://stackoverflow.com/questions/574691/mysql-great-circle-distance-haversine-formula
+        $reply = DB::select($query);
+        dd($reply);
+        return $resultsDistance;
+    }
+
+    private function arrayMergeUnique($base_array, $add_array): array
+        {
+            foreach ($add_array as $key => $value) { //remove duplicates from add_array
+                foreach ($add_array as $remove_key => $remove_value) {
+                    if ($remove_value->poi_id == $value->poi_id && !$remove_key == $key) {
+                        unset($add_array[$key]);
+                    }
+                }
+            }
+
+            if ($base_array) {
+                foreach ($add_array as $key => $value) {
+                    foreach ($base_array as $base_value) {
+                        if ($base_value->poi_id == $value->poi_id) {
+                            unset($add_array[$key]);
+                        }
+                    }
+                }
+                if ($add_array) { //just in case add_array might be empty
+                    return array_merge_recursive($base_array, $add_array);
+                }
+                else return $base_array;
+            } else {
+                return $add_array;
+            }
+        }
+
+    private function arrayFilter($base_array, $filter_array): array // remove everything from base_array which is not in filter_array
+    {
+        foreach ($base_array as $key => $value) {
+            $check = false;
+            foreach ($filter_array as $add_value) {
+                if ($value->poi_id == $add_value->poi_id) {
+                    $check = true;
+                }
+            }
+            if ($check == false){
+                unset($base_array[$key]);
+            }
+        }
+        return $base_array;
+    }
+
+    private function calculateRating($poi_id)
+    {
+        $query = 'select COUNT(*) AS total from user_has_poi_ratings where poi_id = ' . $poi_id;
+        $divisor = DB::select($query);
+        $divisor = $divisor[0]->total;
+        $query = ('select SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois join user_has_poi_ratings on pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.poi_id = ' . $poi_id);
+        $results = DB::select($query);
+        return $results[0]->rating;
+    }
+
+    private function getshortPOI($poi_id): array
     {
         $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
         $divisor = DB::select($query);
         $divisor = $divisor[0] -> number;
-        $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois LEFT JOIN user_has_poi_ratings ON pois.id = user_has_poi_ratings.poi_id WHERE pois.id = '  . $poi_id;
+        $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = '  . $poi_id;
         return DB::select($query);
     }
 
