@@ -44,6 +44,7 @@
                             <option value="10">10 km</option>
                             <option value="20">20 km</option>
                             <option value="25">25 km</option>
+                            <option value="250">250 km</option>
                         </select>
                         <div class="input-group-append">
                             <button class="edit btn btn-dark text-uppercase" type="button">Filtern</button>
