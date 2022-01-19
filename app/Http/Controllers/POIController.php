@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Stevebauman\Location\Facades\Location;
+
 
 class POIController extends BaseController
 {
@@ -243,7 +245,27 @@ class POIController extends BaseController
             $query = 'select distinct (poi_id) from user_has_poi_ratings';
             $results = DB::select($query);
         }
-        foreach($results as $result){
+        foreach($results as $result){ //idea for improvement: via in reduce query amount to 1 by setting its content with one variable containing all ids
+
+            /*
+        $lookup = '';
+        if ($output) {
+            $results =  $output;
+        }
+        else {
+            $query = 'select distinct (poi_id) from pois';
+            $results = DB::select($query);
+        }
+
+        foreach ($results as $result) {
+            $lookup .= $result->poi_id . ', ';
+        }
+        $lookup = substr($lookup, 0, -2);
+
+        $query = 'select * from pois where poi_id IN (' . $lookup . ')';
+        $results = DB::select($query);
+            */
+
             $rating = $this->calculateRating($result->poi_id);
             if ($rating >= $request->rating) {
                 $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = '  . $result->poi_id;
@@ -256,42 +278,23 @@ class POIController extends BaseController
 
     private function distanceFilter(Request $request, $output=null): array
     {
-        $resultsDistance = array();
-       // dd($request);
-        /*
-        if ($output) {
-            foreach ($request->categories as $category) {
-                foreach ($output as $entry) {
-                    $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '" and pois.poi_id = "'. $entry->poi_id . '"';
-                    $results = DB::select($query);
-                    $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
-                }
-            };
+        $position = Location::get('185.74.219.153'); // real solution: $position = Location::get($this->getIp()); -> but won't work on local server
+        $longitude = $position->latitude;   //maybe I mixed them up in the formula... but works this way around :P
+        $latitude = $position->longitude;
+        $distance = $request->distance;
+        if (!is_numeric($distance)) {
+            return $output;
         }
         else {
-            foreach ($request->distances as $distance) {
-                $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '"';
-                $results = DB::select($query);
-                $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
-            };
+            $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance FROM pois HAVING distance <= ' . $distance . ';'; //https://en.wikipedia.org/wiki/Great-circle_distance; https://stackoverflow.com/questions/574691/mysql-great-circle-distance-haversine-formula
+
+            /* alternative way of looking this up:
+             *  $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat )) * cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance FROM pois WHERE poi_id IN (' . $lookup . ') HAVING distance <= ' . $request->distance . ';';
+             * problem: select *, ROUND() FROM does not work, hence all db columns would have to be added manually which would make the code less adaptable
+             */
+
+            return DB::select($query);
         }
-*/
-
-
-
-        $latitude = 10;
-        $longitude = 47;
-       // $poi_id = 1;
-
-        $distance = 86.7;
-
-        $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance FROM pois HAVING distance >= ' . $distance . ';'; //https://en.wikipedia.org/wiki/Great-circle_distance; https://stackoverflow.com/questions/574691/mysql-great-circle-distance-haversine-formula
-
-
-       // $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance FROM pois WHERE pois.poi_id = ' . $poi_id . ';'; //https://en.wikipedia.org/wiki/Great-circle_distance; https://stackoverflow.com/questions/574691/mysql-great-circle-distance-haversine-formula
-        $reply = DB::select($query);
-        dd($reply);
-        return $resultsDistance;
     }
 
     private function arrayMergeUnique($base_array, $add_array): array
@@ -312,11 +315,11 @@ class POIController extends BaseController
                         }
                     }
                 }
-                if ($add_array) { //just in case add_array might be empty
+
                     return array_merge_recursive($base_array, $add_array);
-                }
-                else return $base_array;
-            } else {
+
+            } else
+            {
                 return $add_array;
             }
         }
@@ -354,6 +357,20 @@ class POIController extends BaseController
         $divisor = $divisor[0] -> number;
         $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = '  . $poi_id;
         return DB::select($query);
+    }
+
+    private function getIp(){
+        foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key){
+            if (array_key_exists($key, $_SERVER) === true){
+                foreach (explode(',', $_SERVER[$key]) as $ip){
+                    $ip = trim($ip); // just to be safe
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false){
+                        return $ip;
+                    }
+                }
+            }
+        }
+        return request()->ip(); // it will return server ip when no client ip found
     }
 
 }
