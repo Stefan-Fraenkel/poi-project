@@ -171,7 +171,7 @@ class UserController extends BaseController
             $name = $request->name;
             $email = $request->email;
             $password = $request->password;
-            $inactive = $request->inactive;
+           // $inactive = $request->inactive;
             $roles = $request->roles;
             $permissions = $request->permissions;
 
