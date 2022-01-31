@@ -282,10 +282,17 @@ class POIController extends BaseController
 
     private function distanceFilter(Request $request, $output = null): array
     {
-        $position = Location::get('62.245.238.36'); // had coded BS1 Kempten IP; real solution: $position = Location::get($this->getIp()); -> but won't work on local server
-        $longitude = $position->longitude;   //maybe I mixed them up in the formula... but works this way around :P
-        $latitude = $position->latitude;
-        $distance = 250;
+        /* real solution:
+         * $position = Location::get($this->getIp()); -> but won't work on local server
+         * $longitude = $position->longitude;
+         * $latitude = $position->latitude;
+         */
+
+        //hardcoded bs1 Kempten:
+
+        $longitude = 10.317022068768733;
+        $latitude = 47.71998328790986;
+        $distance = $request->distance;
         if (!is_numeric($distance)) {
             return $output;
         } else {

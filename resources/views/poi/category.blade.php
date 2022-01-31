@@ -39,12 +39,12 @@
                     <div class="input-group">
                         <select class="custom-select" name="distance" id="distance_select">
                             <option selected>Choose...</option>
-                            <option value="0.5">500 m</option>
                             <option value="1">1 km</option>
                             <option value="2">2 km</option>
                             <option value="5">5 km</option>
                             <option value="10">10 km</option>
                             <option value="25">25 km</option>
+                            <option value="50">50 km</option>
                         </select>
                         <div class="input-group-append">
                             <button class="edit btn btn-dark text-uppercase" type="button">Filtern</button>
