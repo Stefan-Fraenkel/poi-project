@@ -37,13 +37,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/category', [POIController::class, 'categoryIndex']);
     Route::post('/category', [POIController::class, 'searchPOIs']);
 
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [POIController::class, 'index'])->name('dashboard');
 
-    Route::get('/', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/', [POIController::class, 'index'])->name('dashboard');
 
     Route::get('/user/notify/users', [UserController::class, 'showNotify']);
 
