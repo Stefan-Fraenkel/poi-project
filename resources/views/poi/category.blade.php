@@ -18,7 +18,7 @@
                 <div class="col-6">
                     <div class="input-group">
                         <select class="custom-select" name="rating" id="rating_select">
-                            <option selected>Choose...</option>
+                            <option value="" selected>Choose...</option> {{-- selected value must be null for filter to function properly --}}
                             <option value="1">1 Stern</option>
                             <option value="2">2 Sterne</option>
                             <option value="3">3 Sterne</option>
@@ -38,7 +38,7 @@
                 <div class="col-6">
                     <div class="input-group">
                         <select class="custom-select" name="distance" id="distance_select">
-                            <option selected>Choose...</option>
+                            <option value="" selected>Choose...</option> {{-- selected value must be null for filter to function properly --}}
                             <option value="1">1 km</option>
                             <option value="2">2 km</option>
                             <option value="5">5 km</option>
