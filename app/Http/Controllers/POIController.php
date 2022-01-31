@@ -12,13 +12,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Stevebauman\Location\Facades\Location;
+use function PHPUnit\Framework\returnValueMap;
 
 
 class POIController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    private $filters = [ 'categories', 'rating', 'distance'];
+    private $filters = ['categories', 'rating', 'distance'];
+
     /*
      * to add a filter write a function that accepts a request and an array as parameters and returns an array
      * standard value for array should be "null"
@@ -27,11 +29,10 @@ class POIController extends BaseController
      *      example: $filters = [ 'filter1', 'filter2', 'name']
      */
 
-    public function initialSetup () {
+    public function initialSetup()
+    {
 
-        /* new new:
-
-        $entries = [['name' => 'Stefan Fränkel', 'email' => 'stefan@genxtreme.de', 'password' => '1234'],['name' => 'Theresa Schwarzmann', 'email' => 'Theresa-Sch@t-online.de', 'password' => '1234'], ['name' => 'Tom Test', 'email' => 'Tom@test.de', 'password' => '1234'], ['name' => 'Max Mustermann', 'email' => 'Max@muster.de', 'password' => '1234'], ['name' => 'Klaus Probieren', 'email' => 'klaus@probieren.de', 'password' => '1234']];
+        $entries = [['name' => 'Stefan Fränkel', 'email' => 'stefan@genxtreme.de', 'password' => '1234'], ['name' => 'Theresa Schwarzmann', 'email' => 'Theresa-Sch@t-online.de', 'password' => '1234'], ['name' => 'Tom Test', 'email' => 'Tom@test.de', 'password' => '1234'], ['name' => 'Max Mustermann', 'email' => 'Max@muster.de', 'password' => '1234'], ['name' => 'Klaus Probieren', 'email' => 'klaus@probieren.de', 'password' => '1234']];
 
         foreach ($entries as $entry) {
             $user = new User();
@@ -40,7 +41,6 @@ class POIController extends BaseController
             $user->password = Hash::make($entry['password']);
             $user->save();
         }
-
 
 
         DB::unprepared('INSERT INTO pois (poi_name, street, zipcode, city, description, open, website, photo, pois.long, lat) VALUES ("Pizzeria Gargano", "Badeweg 3", 87435, "Kempten", "Nette Pizzaria, mit kleiner Sonnenterrasse...", "Täglich 12:00 Uhr bis 21:00 Uhr", "https://pizza-gargano.de/", "https://images.pexels.com/photos/905847/pexels-photo-905847.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260", 47.722115, 10.336324), ("Park Theater", "Seeweg 5", 87435, "Kempten", "Nachtclub mit wechselnden DJs und Happy-Hour von 23:00 Uhr - 24:00 Uhr", "Freitag + Samstag von 22:00 Uhr bis 05:00 Uhr", "https://parktheater.de/", "https://images.pexels.com/photos/2114365/pexels-photo-2114365.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", 47.725743, 10.312395 ), ("Naruto Sushi", "Wengen 4", 87435, "Kempten", "Sushi Spezialitäten aus hochqualitativem Fisch.", "Dienstag bis Sonntag von 11:00 Uhr bis 22:00 Uhr", "https://naruto-sushi.de/", "https://images.pexels.com/photos/2098085/pexels-photo-2098085.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260", 47.726072, 10.313947), ("Fitness Park Dream Fit", "Sportstrasse 21", 87435, "Kempten", "Moderner Fitnesspark mit vielen Geräten und professionellem Team.", "Täglich von 06:00 Uhr bis 23:00 Uhr", "https://dream-fit.de/", "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", 47.730676, 10.299088), ("Kinder Kletterpark", "Rattenweg 56", 87435, "Kempten", "Indoor Klettergarten für Kinder mit Selbstbedienungs Restaurant.", "Donnerstag bis Sonntag von 10:00 Uhr bis 18:00 Uhr", "https://kletterpark-hoch-hinaus.de/", "https://images.pexels.com/photos/5383729/pexels-photo-5383729.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260", 47.671298, 10.254998)');
@@ -54,7 +54,6 @@ class POIController extends BaseController
         DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (4, 4)');
         DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (2, 5), (5, 5)');
 
-        */
 
         /* new:
         DB::unprepared('CREATE TABLE poiTable (poiID int primary key auto_increment, name varchar(100), strasse varchar(50), plz int, ort varchar(50), beschreibung varchar(200), oeffnungszeiten varchar (100), website varchar(100), foto varchar(2048))');
@@ -111,72 +110,75 @@ class POIController extends BaseController
          */
 
 
-      //  DB::unprepared('CREATE TABLE userpoitable (userID bigint default null, poiID int, foreign key (poiID) references poiTable(poiID), bewertung float, referenz varchar(100))');
+        //  DB::unprepared('CREATE TABLE userpoitable (userID bigint default null, poiID int, foreign key (poiID) references poiTable(poiID), bewertung float, referenz varchar(100))');
 
 
         return view('dashboard');
 
     }
 
-    public function filterForEach()
+    public function filterForEach(Request $request)
     {
-        $query = 'select * from nutzerpoitable';
+
+        $query = 'select distinct (poi_id) from user_has_poi_ratings';
         $results = DB::select($query);
         $outputs = array();
-        foreach($results as $result){
-            $input = $this->filterRatings($result -> poiID);
-            array_push($outputs, $input);
+        foreach ($results as $result) {
+            $input = $this->filterRatings($result->poi_id);
+            if ($input[0]->durchschnittsbewertung >= $request->rating) {
+                array_push($outputs, $input[0]);
+            }
         }
-        // dd($outputs[0][0]->durchschnittsbewertung);
-        //dd($outputs);
-
-        return view('poi.showFilterRating') -> with ('theresa', $outputs);
-
+        return $this->index($outputs, "Sternebewertung");
     }
 
     public function filterRatings($poiid): array
     {
-        $filterRating = 'select COUNT(*) AS number from nutzerpoitable where poiid = ' . $poiid;
+
+        $filterRating = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poiid;
         $divisor = DB::select($filterRating);
         $divisor = $divisor[0]->number;
-        $query = ('select SUM(nutzerpoitable.bewertung)/' . $divisor . ' AS durchschnittsbewertung from poitable join nutzerpoitable on poitable.poiID = nutzerpoitable.poiID where nutzerpoitable.poiid = ' . $poiid);
+        $query = ('select pois.poi_id, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS durchschnittsbewertung from pois join user_has_poi_ratings on pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.poi_id = ' . $poiid);
         $results = DB::select($query);
-        $durchschnitt = $results[0] -> durchschnittsbewertung;
-        //dd($durchschnitt);
-        return DB::select($query);
+        $durchschnitt = $results[0]->durchschnittsbewertung;
+        //dd($results);
+        return $results;
     }
 
 
-
-    public function index($results=null, $category='Alle'){
+    public function index($results = null, $category = 'Alle')
+    {
+        //results muss ein Array sein mit Objekten, die die Eigenschaft poi_id besitzen muessen
         if ($results == null) {
             $query = 'select * from pois';
             $results = DB::select($query);
         }
         $outputs = array();
         foreach ($results as $result) {
-            $entry = $this->getshortPOI($result -> poi_id);
+            $entry = $this->getshortPOI($result->poi_id);
             array_push($outputs, $entry[0]);
         }
-        return view('poi.index') -> with('pois', $outputs) -> with('category', $category);
+        return view('poi.index')->with('pois', $outputs)->with('category', $category);
     }
 
-    public function create(Request $request){
-        if($request->isMethod('post')) {
-            $query = 'INSERT INTO pois (poi_name, street, zipcode, city, description, open, website, photo, pois.long, lat) VALUES ("' . $request->poi_name . '", "' . $request->street . '", "' . $request->zipcode . '", "' . $request->city . '", "' . $request->description . '", "' . $request->openingHours . '", "'. $request->website . '", "' . $request->photo . $request->long . '", "' . $request->lat . '")';
+    public function create(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $query = 'INSERT INTO pois (poi_name, street, zipcode, city, description, open, website, photo, pois.long, lat) VALUES ("' . $request->poi_name . '", "' . $request->street . '", "' . $request->zipcode . '", "' . $request->city . '", "' . $request->description . '", "' . $request->openingHours . '", "' . $request->website . '", "' . $request->photo . $request->long . '", "' . $request->lat . '")';
             DB::unprepared($query);
             return $this->index();
-        }
-        else return view('poi.create');
+        } else return view('poi.create');
     }
 
-    public function userPOI(){
+    public function userPOI()
+    {
         $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
         $results = DB::select($query);
         return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
     }
 
-    public function categoryIndex(){
+    public function categoryIndex()
+    {
         $query = 'select * from poi_categories';
         $categories = DB::select($query);
 
@@ -188,44 +190,43 @@ class POIController extends BaseController
         return view('poi.category')->with('categories', $output);
     }
 
-    public function ratePOI(){
+    public function ratePOI()
+    {
         $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '"';
         $results = DB::select($query);
         return redirect();
     }
 
-    public function searchPOIs(Request $request) {
+    public function searchPOIs(Request $request)
+    {
         $output = array();
-        foreach ($this->filters as $filter){
+        foreach ($this->filters as $filter) {
             $filterFunction = $filter . 'Filter';
-            if($request->$filter) {
-                if (!$output){
+            if ($request->$filter) {
+                if (!$output) {
                     $output = $this->arrayMergeUnique($output, $this->{$filterFunction}($request));
-                }
-                else {
+                } else {
                     $output = $this->arrayFilter($output, $this->{$filterFunction}($request, $output));
                 }
             }
         }
-        if($output) {
+        if ($output) {
             return $this->index($output, 'Suche');
-        }
-        else return $this->categoryIndex();
+        } else return $this->categoryIndex();
     }
 
-    private function categoriesFilter(Request $request, $output=null): array
+    private function categoriesFilter(Request $request, $output = null): array
     {
         $resultsCategory = array();
         if ($output) {
             foreach ($request->categories as $category) {
                 foreach ($output as $entry) {
-                    $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '" and pois.poi_id = "'. $entry->poi_id . '"';
+                    $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '" and pois.poi_id = "' . $entry->poi_id . '"';
                     $results = DB::select($query);
                     $resultsCategory = $this->arrayMergeUnique($resultsCategory, $results);
                 }
             };
-        }
-        else {
+        } else {
             foreach ($request->categories as $category) {
                 $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '"';
                 $results = DB::select($query);
@@ -235,17 +236,16 @@ class POIController extends BaseController
         return $resultsCategory;
     }
 
-    private function ratingFilter(Request $request, $output=null): array
+    private function ratingFilter(Request $request, $output = null): array
     {
         $resultsRating = array();
         if ($output) {
-            $results =  $output;
-        }
-        else {
+            $results = $output;
+        } else {
             $query = 'select distinct (poi_id) from user_has_poi_ratings';
             $results = DB::select($query);
         }
-        foreach($results as $result){ //idea for improvement: via in reduce query amount to 1 by setting its content with one variable containing all ids
+        foreach ($results as $result) { //idea for improvement: via in reduce query amount to 1 by setting its content with one variable containing all ids
 
             /*
         $lookup = '';
@@ -268,7 +268,7 @@ class POIController extends BaseController
 
             $rating = $this->calculateRating($result->poi_id);
             if ($rating >= $request->rating) {
-                $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = '  . $result->poi_id;
+                $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $result->poi_id;
                 $reply = DB::select($query);
                 $resultsRating = $this->arrayMergeUnique($resultsRating, $reply);
             }
@@ -276,7 +276,7 @@ class POIController extends BaseController
         return $resultsRating;
     }
 
-    private function distanceFilter(Request $request, $output=null): array
+    private function distanceFilter(Request $request, $output = null): array
     {
         $position = Location::get('185.74.219.153'); // real solution: $position = Location::get($this->getIp()); -> but won't work on local server
         $longitude = $position->latitude;   //maybe I mixed them up in the formula... but works this way around :P
@@ -284,8 +284,7 @@ class POIController extends BaseController
         $distance = $request->distance;
         if (!is_numeric($distance)) {
             return $output;
-        }
-        else {
+        } else {
             $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance FROM pois HAVING distance <= ' . $distance . ';'; //https://en.wikipedia.org/wiki/Great-circle_distance; https://stackoverflow.com/questions/574691/mysql-great-circle-distance-haversine-formula
 
             /* alternative way of looking this up:
@@ -298,31 +297,30 @@ class POIController extends BaseController
     }
 
     private function arrayMergeUnique($base_array, $add_array): array
-        {
-            foreach ($add_array as $key => $value) { //remove duplicates from add_array
-                foreach ($add_array as $remove_key => $remove_value) {
-                    if ($remove_value->poi_id == $value->poi_id && !$remove_key == $key) {
+    {
+        foreach ($add_array as $key => $value) { //remove duplicates from add_array
+            foreach ($add_array as $remove_key => $remove_value) {
+                if ($remove_value->poi_id == $value->poi_id && !$remove_key == $key) {
+                    unset($add_array[$key]);
+                }
+            }
+        }
+
+        if ($base_array) {
+            foreach ($add_array as $key => $value) {
+                foreach ($base_array as $base_value) {
+                    if ($base_value->poi_id == $value->poi_id) {
                         unset($add_array[$key]);
                     }
                 }
             }
 
-            if ($base_array) {
-                foreach ($add_array as $key => $value) {
-                    foreach ($base_array as $base_value) {
-                        if ($base_value->poi_id == $value->poi_id) {
-                            unset($add_array[$key]);
-                        }
-                    }
-                }
+            return array_merge_recursive($base_array, $add_array);
 
-                    return array_merge_recursive($base_array, $add_array);
-
-            } else
-            {
-                return $add_array;
-            }
+        } else {
+            return $add_array;
         }
+    }
 
     private function arrayFilter($base_array, $filter_array): array // remove everything from base_array which is not in filter_array
     {
@@ -333,7 +331,7 @@ class POIController extends BaseController
                     $check = true;
                 }
             }
-            if ($check == false){
+            if ($check == false) {
                 unset($base_array[$key]);
             }
         }
@@ -354,17 +352,18 @@ class POIController extends BaseController
     {
         $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
         $divisor = DB::select($query);
-        $divisor = $divisor[0] -> number;
-        $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = '  . $poi_id;
+        $divisor = $divisor[0]->number;
+        $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
         return DB::select($query);
     }
 
-    private function getIp(){
-        foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key){
-            if (array_key_exists($key, $_SERVER) === true){
-                foreach (explode(',', $_SERVER[$key]) as $ip){
+    private function getIp()
+    {
+        foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key) {
+            if (array_key_exists($key, $_SERVER) === true) {
+                foreach (explode(',', $_SERVER[$key]) as $ip) {
                     $ip = trim($ip); // just to be safe
-                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false){
+                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
                         return $ip;
                     }
                 }
