@@ -239,19 +239,25 @@ return [
         // Sidebar items:
         ['header' => 'FUNKTIONEN'],
         [
-            'text' => 'Suche',
+            'text' => ' Alle POIs',
+            'url'  => '/poi',
+            'icon' => 'fas fa-map-marker-alt',
+            'icon_color' => 'orange',
+        ],
+        [
+            'text' => ' Suche',
             'url'  => '/category',
             'icon' => 'fas fa-fw fa-search',
             'icon_color' => 'green',
         ],
         [
-            'text' => 'Meine Bewertungen',
+            'text' => ' Meine Bewertungen',
             'url'  => '/poi/user',
             'icon' => 'fas fa-fw fa-star',
             'icon_color' => 'yellow',
         ],
         [
-            'text' => 'POI Eintragen',
+            'text' => ' POI Eintragen',
             'url'  => '/poi/create',
             'icon' => 'fas fa-fw fa-plus',
             'icon_color' => 'purple',
@@ -259,13 +265,13 @@ return [
 
         ['header' => 'account_settings'],
         [
-            'text' => 'Mein Konto',
+            'text' => ' Mein Konto',
             'url'  => '/user/profile',
             'icon' => 'fas fa-fw fa-user',
             'icon_color' => 'blue',
         ],
         [
-            'text' => 'Nutzerverwaltung',
+            'text' => ' Nutzerverwaltung',
             'url'  => '/admin/user',
             'icon' => 'fas fa-fw fa-users',
             'icon_color' => 'lightblue',
