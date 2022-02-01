@@ -14,7 +14,10 @@
                              class="card-img-top" alt="fallback bild">
                         <div class="card-body">
                             <h5 class="card-title">{{$poi->poi_name}}</h5>
-                            <p class="card-text">{{$poi->description}}</p>
+                            <p class="card-text">{{$poi->description}}
+                            <br><br>
+                                Entfernung: {{$poi->distance}} km
+                            </p>
                             <p class="poi-rating-text"><i class="rating-icon fas fa-star"></i>{{$poi->rating}}
                                 Sterne-Bewertung</p>
                             <div class="card-footer">

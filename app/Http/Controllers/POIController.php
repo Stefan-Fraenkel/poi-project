@@ -161,6 +161,10 @@ class POIController extends BaseController
         }
     }
 
+    private function calculateDistance(){
+
+    }
+
     private function arrayMergeUnique($base_array, $add_array): array
     {
         foreach ($add_array as $key => $value) { //remove duplicates from add_array
@@ -218,7 +222,9 @@ class POIController extends BaseController
         $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
         $divisor = DB::select($query);
         $divisor = $divisor[0]->number;
-        $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
+        $longitude = 10.317022068768733;
+        $latitude = 47.71998328790986;
+        $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
         return DB::select($query);
     }
 
