@@ -84,22 +84,16 @@ class POIController extends BaseController
     public function update(Request $request)
     {
         if($request->isMethod('post')) {
-            dd($this->getUpdateColVal($request));
-            $query = 'select * from pois where poi_id = "' . $request->poi_id . '"'; // since poi name might get overwritten, poi_id must be contained in request (e.g. via hidden input field)
-            $result = DB::select($query);
-            $poi_id = $result[0]->poi_id;
-            $query = 'update pois set' . $this->getUpdateColVal($request) . 'where poi_id = "' . $poi_id . '"';
+            $query = 'update pois set ' . $this->getUpdateColVal($request) . ' where poi_id = "' . $request->poi_id . '"';
             DB::unprepared($query);
-            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
-            $result = DB::unprepared($query);
-            return $this->index($result, $result[0]->poi_name);
+            return $this->index();
         }
         else {
             $poi_id = explode('/', $request->getRequestUri());
             $poi_id = end($poi_id);
             $query = 'select * from pois where poi_id = "' . $poi_id . '"';
             $result = DB::select($query);
-            return view('poi.create')->with('poi', $result );
+            return view('poi.update')->with('poi', $result );
         }
     }
 
@@ -296,7 +290,7 @@ class POIController extends BaseController
         $update = "";
         foreach ($data as $key => $value) {
             if ($value && $key != '_token' && $key != 'poi_id') {
-                $update .= $key . ' = "' . $value .'", ';
+                $update .= 'pois.' . $key . ' = "' . $value .'", ';
             }
         }
         return rtrim ( $update , ', ');
