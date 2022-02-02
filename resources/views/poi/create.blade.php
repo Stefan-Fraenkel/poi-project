@@ -9,18 +9,18 @@
     <form method="POST" action="/poi/create">
         @csrf
         <label for="poiName" class="form-label">POI Name</label>
-        <input name="name" type="text" id="poiName" class="form-control">
+        <input name="poi_name" type="text" id="poiName" class="form-control">
         <label for="poiStrasse" class="from-label">Strasse</label>
         <input name="street" type="text" id="poiStrasse" class="form-control">
         <label for="poiPlz" class="form-label">PLZ</label>
-        <input name="plz" type="number" id="poiPlz" class="form-control">
+        <input name="zipcode" type="number" id="poiPlz" class="form-control">
         <label for="poiOrt" class="from-label">Ort</label>
         <input name="city" type="text" id="poiOrt" class="form-control">
         <label for="poiBeschreibung" class="form-label">Beschreibung</label>
         <textarea name="description" id="poiBeschreibung" class="form-control"></textarea>
 
         <label for="openingHours" class="from-label">Öffnungszeiten</label>
-        <input name="openingHours" type="text" id="openingHours" class="form-control">
+        <input name="open" type="text" id="openingHours" class="form-control">
 
         <label for="website" class="from-label">Website</label>
         <input name="website" type="text" id="website" class="form-control">

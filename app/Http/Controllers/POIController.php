@@ -47,9 +47,12 @@ class POIController extends BaseController
     public function create(Request $request)
     {
         if ($request->isMethod('post')) {
-            $query = 'INSERT INTO pois (poi_name, street, zipcode, city, description, open, website, photo, pois.long, lat) VALUES ("' . $request->poi_name . '", "' . $request->street . '", "' . $request->zipcode . '", "' . $request->city . '", "' . $request->description . '", "' . $request->openingHours . '", "' . $request->website . '", "' . $request->photo . $request->long . '", "' . $request->lat . '")';
+            $colval = $this->getColVal($request);
+            $query = 'INSERT INTO pois (' . $colval['columns'] . ') VALUES (' . $colval['values'] . ')';
             DB::unprepared($query);
-            return $this->index();
+            $query = 'select * from pois where poi_name = "' . $request->poi_name . '"';
+            $result = DB::select($query);
+            return $this->index($result, $result[0]->poi_name);
         } else return view('poi.create');
     }
 
@@ -75,16 +78,24 @@ class POIController extends BaseController
 
     public function ratePOI(Request $request)
     {
-        //dd($request->getRequestUri());
-        $poi_id = explode('/', $request->getRequestUri());
-        $poi_id = end($poi_id);
-        $query = 'select * from pois where poi_id = "' . $poi_id . '"';;
-        $results = DB::select($query);
-
-        dd($results);
-        $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '"';
-        $results = DB::select($query);
-        return redirect();
+        if($request->isMethod('post')) {
+            $user_id = Auth::user()->id;
+            $score = $request->score;
+            $comment = $request->comment;
+            $poi_id = $request->poi_id;
+            if ($comment) {
+                $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score, comment) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '", "' . $comment . '")';
+            }
+            else    $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '")';
+            DB::unprepared($query);
+        }
+        else {
+            $poi_id = explode('/', $request->getRequestUri());
+            $poi_id = end($poi_id);
+            $query = 'select * from pois where poi_id = "' . $poi_id . '"';;
+            $result = DB::select($query);
+            return $this->index($result, $result[0]->poi_name);
+        }
     }
 
     public function searchPOIs(Request $request)
@@ -233,6 +244,21 @@ class POIController extends BaseController
         $latitude = 47.71998328790986;
         $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
         return DB::select($query);
+    }
+
+    private function getColVal(Request $request) {
+        $data = $request->all();
+        $columns = "";
+        $values = "";
+        foreach ($data as $key => $value) {
+            if ($value && $key != '_token') {
+                $columns .= $key . ', ';
+                $values .= '"' .$value . '", ';
+            }
+        }
+        $columns = rtrim ( $columns , ', ');
+        $values = rtrim ( $values , ', ');
+        return ['columns' => $columns, 'values' => $values];
     }
 
     private function getIp()

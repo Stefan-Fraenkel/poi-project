@@ -14,9 +14,9 @@ class CreatePoiHasCategoriesTable extends Migration
     public function up()
     {
         Schema::create('poi_has_categories', function (Blueprint $table) {
-            $table->unsignedBigInteger('poi_id')->nullable();
+            $table->unsignedBigInteger('poi_id');
             $table->foreign('poi_id')->references('poi_id')->on('pois')->onDelete('cascade');
-            $table->unsignedBigInteger('cat_id')->nullable();
+            $table->unsignedBigInteger('cat_id');
             $table->foreign('cat_id')->references('cat_id')->on('poi_categories')->onDelete('cascade');
         });
     }

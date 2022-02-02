@@ -19,12 +19,12 @@ class CreatePoisTable extends Migration
             $table->string('street');
             $table->integer('zipcode');
             $table->string('city');
-            $table->string('description');
-            $table->string('open');
-            $table->string('website');
-            $table->string('photo');
-            $table->double('long', 9,6);
-            $table->double('lat', 9,6);
+            $table->string('description')->nullable();
+            $table->string('open')->nullable();
+            $table->string('website')->nullable();
+            $table->string('photo')->nullable();
+            $table->double('long', 9,6)->nullable();
+            $table->double('lat', 9,6)->nullable();
         });
     }
 
