@@ -97,9 +97,11 @@ class POIController extends BaseController
         }
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request) //implement in view href=poi/delete/$poi_id for poi delete button -> best place: show me more view of poi
     {
-        $query = 'delete from pois where poi_id = "' . $request->poi_id . '"';
+        $poi_id = explode('/', $request->getRequestUri());
+        $poi_id = end($poi_id);
+        $query = 'delete from pois where poi_id = "' . $poi_id . '"';
         $result = DB::select($query);
         return $this->index();
     }

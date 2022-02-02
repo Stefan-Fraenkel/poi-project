@@ -32,7 +32,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/user', [POIController::class, 'userPOI']);
         Route::match(['get', 'post'],'/rate/{id?}', [POIController::class, 'ratePOI']);
         Route::match(['get', 'post'],'/update/{id?}', [POIController::class, 'update']);
-        Route::get('/delete', [POIController::class, 'destroy']);
+        Route::get('/delete/{id?}', [POIController::class, 'destroy']);
     });
 
     Route::get('/create', [POIController::class, 'createPOI']);
