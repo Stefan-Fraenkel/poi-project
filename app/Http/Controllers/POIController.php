@@ -47,33 +47,13 @@ class POIController extends BaseController
     public function create(Request $request)
     {
         if ($request->isMethod('post')) {
-            $colval = $this->getColVal($request);
+            $colval = $this->getInsertColVal($request);
             $query = 'INSERT INTO pois (' . $colval['columns'] . ') VALUES (' . $colval['values'] . ')';
             DB::unprepared($query);
             $query = 'select * from pois where poi_name = "' . $request->poi_name . '"';
             $result = DB::select($query);
             return $this->index($result, $result[0]->poi_name);
         } else return view('poi.create');
-    }
-
-    public function userPOI()
-    {
-        $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
-        $results = DB::select($query);
-        return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
-    }
-
-    public function categoryIndex()
-    {
-        $query = 'select * from poi_categories';
-        $categories = DB::select($query);
-
-        $output = array();
-        foreach ($categories as $category) {
-            $output[] = $category->cat_name;
-        }
-
-        return view('poi.category')->with('categories', $output);
     }
 
     public function ratePOI(Request $request)
@@ -88,14 +68,66 @@ class POIController extends BaseController
             }
             else    $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '")';
             DB::unprepared($query);
+            $query = 'select * from pois where poi_id = "' . $request->poi_id . '"';
+            $result = DB::select($query);
+            return $this->index($result, $result[0]->poi_name);
         }
         else {
             $poi_id = explode('/', $request->getRequestUri());
             $poi_id = end($poi_id);
-            $query = 'select * from pois where poi_id = "' . $poi_id . '"';;
+            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
             $result = DB::select($query);
+            return view('poi.rate')->with('poi', $result ); //view still needs to be created
+        }
+    }
+
+    public function update(Request $request)
+    {
+        if($request->isMethod('post')) {
+            dd($this->getUpdateColVal($request));
+            $query = 'select * from pois where poi_id = "' . $request->poi_id . '"'; // since poi name might get overwritten, poi_id must be contained in request (e.g. via hidden input field)
+            $result = DB::select($query);
+            $poi_id = $result[0]->poi_id;
+            $query = 'update pois set' . $this->getUpdateColVal($request) . 'where poi_id = "' . $poi_id . '"';
+            DB::unprepared($query);
+            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
+            $result = DB::unprepared($query);
             return $this->index($result, $result[0]->poi_name);
         }
+        else {
+            $poi_id = explode('/', $request->getRequestUri());
+            $poi_id = end($poi_id);
+            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
+            $result = DB::select($query);
+            return view('poi.create')->with('poi', $result );
+        }
+    }
+
+    public function destroy(Request $request)
+    {
+        $query = 'delete from pois where poi_id = "' . $request->poi_id . '"';
+        $result = DB::select($query);
+        return $this->index();
+    }
+
+    public function userPOI()
+    {
+        $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
+        $results = DB::select($query);
+        return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
+    }
+
+    public function categoryIndex() // to dynamically fill the category dropdown with categories from database
+    {
+        $query = 'select * from poi_categories';
+        $categories = DB::select($query);
+
+        $output = array();
+        foreach ($categories as $category) {
+            $output[] = $category->cat_name;
+        }
+
+        return view('poi.category')->with('categories', $output);
     }
 
     public function searchPOIs(Request $request)
@@ -179,10 +211,6 @@ class POIController extends BaseController
         }
     }
 
-    private function calculateDistance(){
-
-    }
-
     private function arrayMergeUnique($base_array, $add_array): array
     {
         foreach ($add_array as $key => $value) { //remove duplicates from add_array
@@ -246,14 +274,15 @@ class POIController extends BaseController
         return DB::select($query);
     }
 
-    private function getColVal(Request $request) {
+    private function getInsertColVal(Request $request): array
+    {
         $data = $request->all();
         $columns = "";
         $values = "";
         foreach ($data as $key => $value) {
-            if ($value && $key != '_token') {
+            if ($value && $key != '_token' && $key != 'poi_id') {
                 $columns .= $key . ', ';
-                $values .= '"' .$value . '", ';
+                $values .= '"' . $value . '", ';
             }
         }
         $columns = rtrim ( $columns , ', ');
@@ -261,7 +290,19 @@ class POIController extends BaseController
         return ['columns' => $columns, 'values' => $values];
     }
 
-    private function getIp()
+    private function getUpdateColVal(Request $request): string //should be working, so far untested
+    {
+        $data = $request->all();
+        $update = "";
+        foreach ($data as $key => $value) {
+            if ($value && $key != '_token' && $key != 'poi_id') {
+                $update .= $key . ' = "' . $value .'", ';
+            }
+        }
+        return rtrim ( $update , ', ');
+    }
+
+    private function getIp(): ?string
     {
         foreach (array('HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_X_CLUSTER_CLIENT_IP', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'REMOTE_ADDR') as $key) {
             if (array_key_exists($key, $_SERVER) === true) {
