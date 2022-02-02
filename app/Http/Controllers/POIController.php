@@ -73,8 +73,15 @@ class POIController extends BaseController
         return view('poi.category')->with('categories', $output);
     }
 
-    public function ratePOI()
+    public function ratePOI(Request $request)
     {
+        //dd($request->getRequestUri());
+        $poi_id = explode('/', $request->getRequestUri());
+        $poi_id = end($poi_id);
+        $query = 'select * from pois where poi_id = "' . $poi_id . '"';;
+        $results = DB::select($query);
+
+        dd($results);
         $query = 'select * from pois JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id  where poi_categories.cat_name = "' . $category . '"';
         $results = DB::select($query);
         return redirect();
@@ -224,7 +231,7 @@ class POIController extends BaseController
         $divisor = $divisor[0]->number;
         $longitude = 10.317022068768733;
         $latitude = 47.71998328790986;
-        $query = 'select pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
+        $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
         return DB::select($query);
     }
 

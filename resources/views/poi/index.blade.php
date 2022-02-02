@@ -13,15 +13,19 @@
                         <img src="{{$poi->photo}}" style="max-height: 192px;"
                              class="card-img-top" alt="fallback bild">
                         <div class="card-body">
-                            <h5 class="card-title">{{$poi->poi_name}}</h5>
-                            <p class="card-text">{{$poi->description}}
-                                <br><br>
+                            <h5 class="card-title" style="font-weight: bold">{{$poi->poi_name}}</h5>
+                            <p class="card-text">
+                                <br>
+                                {{$poi->description}}
+                            <br><br>
                                 Entfernung: {{$poi->distance}} km
                             </p>
                             <p class="poi-rating-text"><i class="rating-icon fas fa-star"></i>{{$poi->rating}}
                                 Sterne-Bewertung</p>
                             <div class="card-footer">
                                 <a href="#" class="btn btn-outline-dark poi-more-btn">Mehr erfahren</a>
+                                <br><br>
+                                <a href="poi/rate/{{$poi->poi_id}}" class="btn btn-outline-dark poi-more-btn">Bewerten</a>
                             </div>
                         </div>
                     </div>
