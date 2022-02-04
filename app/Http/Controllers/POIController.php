@@ -297,9 +297,6 @@ class POIController extends BaseController
             $reply->categories[$result->cat_id] = $result->cat_name;
             $reply->comments[$result->user_id] = $result->comment;
         }
-
-
-        dd($reply);
         return DB::select($query);
     }
 
