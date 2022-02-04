@@ -276,7 +276,7 @@ class POIController extends BaseController
 
         $longitude = 10.317022068768733;
         $latitude = 47.71998328790986;
-        $query = 'SELECT pois.poi_id, pois.poi_name, pois.street, pois.zipcode, pois.city, pois.description, pois.open, pois.website, pois.photo, pois.long, pois.lat, poi_categories.cat_name, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name,
+        $query = 'SELECT pois.poi_id, pois.poi_name, pois.street, pois.zipcode, pois.city, pois.description, pois.open, pois.website, pois.photo, pois.long, pois.lat, poi_categories.cat_id, poi_categories.cat_name, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name, users.id AS user_id,
         SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance
         FROM pois
         RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id
@@ -284,21 +284,18 @@ class POIController extends BaseController
         RIGHT JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id
         RIGHT JOIN users ON user_has_poi_ratings.user_id = users.id
         WHERE pois.poi_id = ' . $poi_id . '
-        GROUP BY poi_categories.cat_id, pois.poi_id, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name';
+        GROUP BY poi_categories.cat_id, pois.poi_id, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name, users.id';
         $results = DB::select($query);
-        dd($results);
-        $reply = array();
-        $i = 0;
+        $reply = $results[0];
         foreach ($results as $result) {
-            if ($i == 0){
-                $reply = $result;
-                $reply->names = $result->name;
-                $i++;
+            $reply->user_names[$result->user_id] = $result->name;
+            $user_photo = User::where('id', $result->user_id) ->first()->profile_photo_path;
+            if ($user_photo) {
+                $reply->user_photos[$result->user_id] = '/storage/' . $user_photo;
             }
-            else {
-                $reply->names = $result->name;
-            }
-
+            else $reply->user_photos[$result->user_id] = 'https://ui-avatars.com/api/?name=' . $result->name . '&color=7F9CF5&background=EBF4FF';
+            $reply->categories[$result->cat_id] = $result->cat_name;
+            $reply->comments[$result->user_id] = $result->comment;
         }
 
 
