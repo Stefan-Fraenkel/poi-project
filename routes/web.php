@@ -21,6 +21,9 @@ Route::match(['get', 'post'], '/register', function () {
     return redirect('/');
 });
 
+Route::get('/test', [POIController::class, 'getlongPOI']);
+
+
 //Route::get('/setup', [POIController::class, 'initialSetup']);
 
 //logged in

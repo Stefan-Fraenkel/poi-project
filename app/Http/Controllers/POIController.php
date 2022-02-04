@@ -259,11 +259,13 @@ class POIController extends BaseController
         return $results[0]->rating;
     }
 
-    private function getshortPOI($poi_id): array
+    public function getlongPOI($poi_id=3): array
     {
         $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
         $divisor = DB::select($query);
         $divisor = $divisor[0]->number;
+
+
         /* real solution:
          * $position = Location::get($this->getIp()); -> but won't work on local server
          * $longitude = $position->longitude;
@@ -274,7 +276,53 @@ class POIController extends BaseController
 
         $longitude = 10.317022068768733;
         $latitude = 47.71998328790986;
-        $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
+        $query = 'SELECT pois.poi_id, pois.poi_name, pois.street, pois.zipcode, pois.city, pois.description, pois.open, pois.website, pois.photo, pois.long, pois.lat, poi_categories.cat_name, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name,
+        SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance
+        FROM pois
+        RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id
+        RIGHT JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id
+        RIGHT JOIN poi_categories ON poi_has_categories.cat_id = poi_categories.cat_id
+        RIGHT JOIN users ON user_has_poi_ratings.user_id = users.id
+        WHERE pois.poi_id = ' . $poi_id . '
+        GROUP BY poi_categories.cat_id, pois.poi_id, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name';
+        $results = DB::select($query);
+        dd($results);
+        $reply = array();
+        $i = 0;
+        foreach ($results as $result) {
+            if ($i == 0){
+                $reply = $result;
+                $reply->names = $result->name;
+                $i++;
+            }
+            else {
+                $reply->names = $result->name;
+            }
+
+        }
+
+
+        dd($reply);
+        return DB::select($query);
+    }
+
+    private function getshortPOI($poi_id): array
+    {
+        $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
+        $divisor = DB::select($query);
+        $divisor = $divisor[0]->number;
+
+        /* real solution:
+         * $position = Location::get($this->getIp()); -> but won't work on local server
+         * $longitude = $position->longitude;
+         * $latitude = $position->latitude;
+         */
+
+        //hardcoded bs1 Kempten:
+
+        $longitude = 10.317022068768733;
+        $latitude = 47.71998328790986;
+        $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
         return DB::select($query);
     }
 
