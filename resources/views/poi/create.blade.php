@@ -8,8 +8,12 @@
 <div>
     <form method="POST" action="/poi/create">
         @csrf
-        <label for="poiName" class="form-label">POI Name</label>
-        <input name="name" type="text" id="poiName" class="form-control">
+        <div class="row align-content-start">
+            <div class="col-12">
+                <label for="poiName" class="form-label">POI Name</label>
+                <input name="name" type="text" id="poiName" class="form-control">
+            </div>
+        </div>
         <label for="poiStrasse" class="from-label">Strasse</label>
         <input name="street" type="text" id="poiStrasse" class="form-control">
         <label for="poiPlz" class="form-label">PLZ</label>
