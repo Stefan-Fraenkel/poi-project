@@ -286,7 +286,7 @@ class POIController extends BaseController
         return ['columns' => $columns, 'values' => $values];
     }
 
-    private function getUpdateColVal(Request $request): string //should be working, so far untested
+    private function getUpdateColVal(Request $request): string
     {
         $data = $request->all();
         $update = "";
