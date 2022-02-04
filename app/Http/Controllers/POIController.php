@@ -264,7 +264,7 @@ class POIController extends BaseController
         $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
         $divisor = DB::select($query);
         $divisor = $divisor[0]->number;
-        $longitude = 10.317022068768733;
+        $longitude = 10.317022068768733; //current location should be gotten here
         $latitude = 47.71998328790986;
         $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois LEFT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
         return DB::select($query);
