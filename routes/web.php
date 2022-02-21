@@ -47,7 +47,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         return redirect()->route('index');
     });
 
+    Route::get('/category', [POIController::class, 'categoryIndex']);
     Route::post('/category', [POIController::class, 'searchPOIs']);
+
 
     Route::get('/user/notify/users', [UserController::class, 'showNotify']);
 
