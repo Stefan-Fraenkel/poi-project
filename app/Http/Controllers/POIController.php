@@ -41,6 +41,7 @@ class POIController extends BaseController
             $entry = $this->getshortPOI($result->poi_id);
             array_push($outputs, $entry[0]);
         }
+        //dd($outputs);
         return view('poi.index')->with('pois', $outputs)->with('category', $category);
     }
 
@@ -104,6 +105,12 @@ class POIController extends BaseController
         $query = 'delete from pois where poi_id = "' . $poi_id . '"';
         $result = DB::select($query);
         return $this->index();
+    }
+
+    public function show($poi_id) {
+        $query = 'select * from pois where poi_id = "' . $poi_id . '"';
+        $result = DB::select($query);
+        return view('poi.detail')->with('poi', $result );
     }
 
     public function userPOI()
