@@ -41,7 +41,6 @@ class POIController extends BaseController
             $entry = $this->getshortPOI($result->poi_id);
             array_push($outputs, $entry[0]);
         }
-        //dd($outputs);
         return view('poi.index')->with('pois', $outputs)->with('category', $category);
     }
 
@@ -94,7 +93,7 @@ class POIController extends BaseController
             $poi_id = end($poi_id);
             $query = 'select * from pois where poi_id = "' . $poi_id . '"';
             $result = DB::select($query);
-            return view('poi.update')->with('poi', $result );
+            return view('poi.update')->with('poi', $result[0] );
         }
     }
 
@@ -108,9 +107,7 @@ class POIController extends BaseController
     }
 
     public function show($poi_id) {
-        $query = 'select * from pois where poi_id = "' . $poi_id . '"';
-        $result = DB::select($query);
-        return view('poi.detail')->with('poi', $result );
+        return view('poi.detail')->with('poi', $this->getlongPOI($poi_id)[0]);
     }
 
     public function userPOI()
@@ -266,7 +263,7 @@ class POIController extends BaseController
         return $results[0]->rating;
     }
 
-    public function getlongPOI($poi_id=3): array
+    private function getlongPOI($poi_id): array
     {
         $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
         $divisor = DB::select($query);
