@@ -107,7 +107,7 @@ class POIController extends BaseController
     }
 
     public function show($poi_id) {
-        return view('poi.detail')->with('poi', $this->getlongPOI($poi_id)[0]);
+        return view('poi.detail')->with('poi', $this->getlongPOI($poi_id));
     }
 
     public function userPOI()
@@ -263,7 +263,7 @@ class POIController extends BaseController
         return $results[0]->rating;
     }
 
-    private function getlongPOI($poi_id): array
+    private function getlongPOI ($poi_id)
     {
         $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
         $divisor = DB::select($query);
@@ -280,7 +280,7 @@ class POIController extends BaseController
 
         $longitude = 10.317022068768733;
         $latitude = 47.71998328790986;
-        $query = 'SELECT pois.poi_id, pois.poi_name, pois.street, pois.zipcode, pois.city, pois.description, pois.open, pois.website, pois.photo, pois.long, pois.lat, poi_categories.cat_id, poi_categories.cat_name, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name, users.id AS user_id,
+        $query = 'SELECT pois.poi_id, pois.poi_name, pois.street, pois.zipcode, pois.city, pois.description, pois.open, pois.website, pois.photo, pois.long, pois.lat, poi_categories.cat_id, poi_categories.cat_name, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name AS user_name, users.id AS user_id,
         SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance
         FROM pois
         RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id
@@ -289,19 +289,36 @@ class POIController extends BaseController
         RIGHT JOIN users ON user_has_poi_ratings.user_id = users.id
         WHERE pois.poi_id = ' . $poi_id . '
         GROUP BY poi_categories.cat_id, pois.poi_id, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name, users.id';
+
         $results = DB::select($query);
         $reply = $results[0];
+        $reply->cat_names = array();
+        $reply->users = array();
+
+        $i = 0;
+
         foreach ($results as $result) {
-            $reply->user_names[$result->user_id] = $result->name;
+
+            $reply->users[$result->user_id] = ['id' => $result->user_id, 'name' => $result->user_name, 'comment' => $result->comment, 'rating' => $result->rating];
+
             $user_photo = User::where('id', $result->user_id) ->first()->profile_photo_path;
+
             if ($user_photo) {
-                $reply->user_photos[$result->user_id] = '/storage/' . $user_photo;
+                $reply->users[$result->user_id]['photo'] = '/storage/' . $user_photo;
             }
-            else $reply->user_photos[$result->user_id] = 'https://ui-avatars.com/api/?name=' . $result->name . '&color=7F9CF5&background=EBF4FF';
-            $reply->categories[$result->cat_id] = $result->cat_name;
-            $reply->comments[$result->user_id] = $result->comment;
+            else $reply->users[$result->user_id]['photo'] = 'https://ui-avatars.com/api/?name=' . $result->user_name . '&color=7F9CF5&background=EBF4FF';
+
+            if (!in_array($result->cat_name, $reply->cat_names))
+            {
+                $reply->cat_names[] = $result->cat_name;
+            }
+
+            $i++;
+
         }
-        return DB::select($query);
+
+        unset($reply->cat_name, $reply->cat_id, $reply->user_id, $reply->rating, $reply->user_name, $reply->comment);
+        return $reply;
     }
 
     private function getshortPOI($poi_id): array
