@@ -20,9 +20,8 @@
                             <p class="poi-rating-text"><i class="rating-icon fas fa-star"></i>{{$poi->rating}}
                                 Sterne-Bewertung</p>
                             <div class="card-footer">
-                                <a href="#" class="btn btn-outline-dark poi-more-btn">Mehr erfahren</a>
-                                <a href="poi/rate/{{$poi->poi_id}}"
-                                    class="btn btn-outline-dark poi-more-btn">Jetzt Bewerten</a>
+                                <a href="{{ url('poi/show/' . $poi->poi_id) }}" class="btn btn-outline-dark poi-more-btn">Mehr erfahren</a>
+                                <a href="{{ url('poi/rate/' . $poi->poi_id) }}" class="btn btn-outline-dark poi-more-btn">Jetzt Bewerten</a>
                             </div>
                         </div>
                     </div>
