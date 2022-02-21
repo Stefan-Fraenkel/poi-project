@@ -30,22 +30,24 @@ Route::get('/test', [POIController::class, 'getlongPOI']);
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     Route::prefix('poi')->group(function () {
-        Route::get('', [POIController::class, 'index']);
+        Route::get('', [POIController::class, 'index'])->name('index');
         Route::match(['get', 'post'],'/create', [POIController::class, 'create']);
         Route::get('/user', [POIController::class, 'userPOI']);
+        Route::get('/show/{id?}', [POIController::class, 'show']);
         Route::match(['get', 'post'],'/rate/{id?}', [POIController::class, 'ratePOI']);
         Route::match(['get', 'post'],'/update/{id?}', [POIController::class, 'update']);
         Route::get('/delete/{id?}', [POIController::class, 'destroy']);
     });
 
-    Route::get('/create', [POIController::class, 'createPOI']);
+    Route::get('/dashboard', function () {
+        return redirect()->route('index');
+    });
 
-    Route::get('/category', [POIController::class, 'categoryIndex']);
+    Route::get('', function () {
+        return redirect()->route('index');
+    });
+
     Route::post('/category', [POIController::class, 'searchPOIs']);
-
-    Route::get('/dashboard', [POIController::class, 'index'])->name('dashboard');
-
-    Route::get('/', [POIController::class, 'index'])->name('dashboard');
 
     Route::get('/user/notify/users', [UserController::class, 'showNotify']);
 
