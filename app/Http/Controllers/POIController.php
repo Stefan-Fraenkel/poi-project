@@ -55,30 +55,17 @@ class POIController extends BaseController
         } else return view('poi.create');
     }
 
-    public function ratePOI(Request $request)
-    {
-        if($request->isMethod('post')) {
-            $user_id = Auth::user()->id;
-            $score = $request->score;
-            $comment = $request->comment;
-            $poi_id = $request->poi_id;
-            if ($comment) {
-                $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score, comment) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '", "' . $comment . '")';
-            }
-            else    $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '")';
-            DB::unprepared($query);
-            $query = 'select * from pois where poi_id = "' . $request->poi_id . '"';
-            $result = DB::select($query);
-            return $this->index($result, $result[0]->poi_name);
-        }
-        else {
-            $poi_id = explode('/', $request->getRequestUri());
-            $poi_id = end($poi_id);
-            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
-            $result = DB::select($query);
-            return view('poi.rate')->with('poi', $result ); //view still needs to be created
-        }
+    public function show($poi_id) {
+        return view('poi.detail')->with('poi', $this->getLongPOI($poi_id));
     }
+
+    public function userPOI()
+    {
+        $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
+        $results = DB::select($query);
+        return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
+    }
+
 
     public function update(Request $request)
     {
@@ -96,6 +83,31 @@ class POIController extends BaseController
         }
     }
 
+    public function ratePOI(Request $request)
+    {
+        if($request->isMethod('post')) {
+            $user_id = Auth::user()->id;
+            $score = $request->score;
+            $comment = $request->comment;
+            $poi_id = $request->poi_id;
+            if ($comment) {
+                $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score, comment) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '", "' . $comment . '")';
+            }
+            else $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '")';
+            DB::unprepared($query);
+            $query = 'select * from pois where poi_id = "' . $request->poi_id . '"';
+            $result = DB::select($query);
+            return $this->index($result, $result[0]->poi_name);
+        }
+        else {
+            $poi_id = explode('/', $request->getRequestUri());
+            $poi_id = end($poi_id);
+            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
+            $result = DB::select($query);
+            return view('poi.rate')->with('poi', $result ); //view still needs to be created
+        }
+    }
+
     public function destroy(Request $request) //implement in view href=poi/delete/$poi_id for poi delete button -> best place: show me more view of poi
     {
         $poi_id = explode('/', $request->getRequestUri());
@@ -103,17 +115,6 @@ class POIController extends BaseController
         $query = 'delete from pois where poi_id = "' . $poi_id . '"';
         $result = DB::select($query);
         return $this->index();
-    }
-
-    public function show($poi_id) {
-        return view('poi.detail')->with('poi', $this->getLongPOI($poi_id));
-    }
-
-    public function userPOI()
-    {
-        $query = 'select * from pois JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.user_id = "' . Auth::user()->id . '"';
-        $results = DB::select($query);
-        return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
     }
 
     public function categoryIndex() // to dynamically fill the category dropdown with categories from database
