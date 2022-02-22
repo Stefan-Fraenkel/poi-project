@@ -66,7 +66,6 @@ class POIController extends BaseController
         return $this->index($results, 'Von ' . Auth::user()->name . ' bewertet');
     }
 
-
     public function update(Request $request)
     {
         if($request->isMethod('post')) {
@@ -102,9 +101,9 @@ class POIController extends BaseController
         else {
             $poi_id = explode('/', $request->getRequestUri());
             $poi_id = end($poi_id);
-            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
-            $result = DB::select($query);
-            return view('poi.rate')->with('poi', $result ); //view still needs to be created
+          //  $query = 'select * from pois where poi_id = "' . $poi_id . '"';
+          //  $result = DB::select($query);
+            return view('poi.rate')->with('poi', $this->getLongPOI($poi_id) ); //view still needs to be created
         }
     }
 
