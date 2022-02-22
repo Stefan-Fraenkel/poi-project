@@ -38,8 +38,8 @@ class POIController extends BaseController
         }
         $outputs = array();
         foreach ($results as $result) {
-            $entry = $this->getshortPOI($result->poi_id);
-            array_push($outputs, $entry[0]);
+            $entry = $this->getShortPOI($result->poi_id);
+            array_push($outputs, $entry);
         }
         return view('poi.index')->with('pois', $outputs)->with('category', $category);
     }
@@ -107,7 +107,7 @@ class POIController extends BaseController
     }
 
     public function show($poi_id) {
-        return view('poi.detail')->with('poi', $this->getlongPOI($poi_id));
+        return view('poi.detail')->with('poi', $this->getLongPOI($poi_id));
     }
 
     public function userPOI()
@@ -255,20 +255,15 @@ class POIController extends BaseController
 
     private function calculateRating($poi_id)
     {
-        $query = 'select COUNT(*) AS total from user_has_poi_ratings where poi_id = ' . $poi_id;
-        $divisor = DB::select($query);
-        $divisor = $divisor[0]->total;
+        $divisor = $this->countScores($poi_id);
         $query = ('select SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois join user_has_poi_ratings on pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.poi_id = ' . $poi_id);
         $results = DB::select($query);
         return $results[0]->rating;
     }
 
-    private function getlongPOI ($poi_id)
+    private function getLongPOI ($poi_id)
     {
-        $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
-        $divisor = DB::select($query);
-        $divisor = $divisor[0]->number;
-
+        $divisor = $this->countScores($poi_id);
 
         /* real solution:
          * $position = Location::get($this->getIp()); -> but won't work on local server
@@ -321,11 +316,9 @@ class POIController extends BaseController
         return $reply;
     }
 
-    private function getshortPOI($poi_id): array
+    private function getShortPOI($poi_id)
     {
-        $query = 'select COUNT(*) AS number from user_has_poi_ratings where poi_id = ' . $poi_id;
-        $divisor = DB::select($query);
-        $divisor = $divisor[0]->number;
+        $divisor = $this->countScores($poi_id);
 
         /* real solution:
          * $position = Location::get($this->getIp()); -> but won't work on local server
@@ -338,7 +331,8 @@ class POIController extends BaseController
         $longitude = 10.317022068768733;
         $latitude = 47.71998328790986;
         $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
-        return DB::select($query);
+        $reply = DB::select($query);
+        return $reply[0];
     }
 
     private function getInsertColVal(Request $request): array
@@ -355,6 +349,12 @@ class POIController extends BaseController
         $columns = rtrim ( $columns , ', ');
         $values = rtrim ( $values , ', ');
         return ['columns' => $columns, 'values' => $values];
+    }
+
+    private function countScores ($poi_id) {
+        $query = 'select COUNT(*) AS divisor from user_has_poi_ratings where poi_id = ' . $poi_id;
+        $result = DB::select($query);
+        return $result[0]->divisor;
     }
 
     private function getUpdateColVal(Request $request): string
