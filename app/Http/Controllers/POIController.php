@@ -48,13 +48,24 @@ class POIController extends BaseController
     public function create(Request $request)
     {
         if ($request->isMethod('post')) {
-            //  dd($request);
             $colval = $this->getInsertColVal($request);
             $query = 'INSERT INTO pois (' . $colval['columns'] . ') VALUES (' . $colval['values'] . ')';
             DB::unprepared($query);
-            $query = 'select * from pois where poi_name = "' . $request->poi_name . '"';
+
+            //get auto incremented id of the entry just created
+            $query = 'SELECT LAST_INSERT_ID()';
+            $field = 'LAST_INSERT_ID()';
+            $poi_id = DB::select($query)[0]->$field;
+
+            foreach ($request->categories as $cat_id => $cat_name) {
+                $query = 'INSERT INTO poi_has_categories (poi_id, cat_id) VALUES ("' . $poi_id . '", "' . $cat_id . '")';
+                DB::unprepared($query);
+            }
+
+            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
             $result = DB::select($query);
             return $this->index($result, $result[0]->poi_name);
+
         } else{
 
             $query = 'select * from poi_categories';
@@ -62,8 +73,9 @@ class POIController extends BaseController
 
             $output = array();
             foreach ($categories as $category) {
-                $output[] = $category->cat_name;
+                $output[$category->cat_id] = $category->cat_name;
             }
+          //  dd($output);
             return view('poi.create')->with('categories', $output);
         }
     }
@@ -348,14 +360,13 @@ class POIController extends BaseController
     }
 
     private function getInsertColVal(Request $request): array
-    //hier muss noch was gefixt werden
     {
         $data = $request->all();
         $columns = "";
         $values = "";
         foreach ($data as $key => $value) {
             if ($value && $key != '_token' && $key != 'poi_id' && $key != 'categories') {
-                $columns .= $key . ', ';
+                $columns .= 'pois.' . $key . ', ';
                 $values .= '"' . $value . '", ';
             }
         }

@@ -16,9 +16,9 @@
             </div>
             <p class="pt-3"><b>Kategorien</b></p>
             <div class="row align-items-start pb-3">
-                @foreach ($categories as $category)
+                @foreach ($categories as $key=>$category)
                     <div class="col-sm-6 col-md-2 ml-4">
-                        <input class="form-check-input checkbox" type="checkbox" name="categories[]"
+                        <input class="form-check-input checkbox" type="checkbox" name="categories[{{$key}}]"
                                value="{{$category}}">
                         <label class="form-check-label checkox-label" for="flexCheckDefault">
                             {{$category}} &nbsp;&nbsp;
