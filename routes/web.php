@@ -37,6 +37,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::match(['get', 'post'],'/rate/{id?}', [POIController::class, 'ratePOI']);
         Route::match(['get', 'post'],'/update/{id?}', [POIController::class, 'update']);
         Route::get('/delete/{id?}', [POIController::class, 'destroy']);
+        Route::get('/search', [POIController::class, 'categoryIndex']);
+        Route::post('/search', [POIController::class, 'searchPOIs']);
     });
 
     Route::get('/dashboard', function () {
@@ -46,9 +48,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('', function () {
         return redirect()->route('index');
     });
-
-    Route::get('/category', [POIController::class, 'categoryIndex']);
-    Route::post('/category', [POIController::class, 'searchPOIs']);
 
 
     Route::get('/user/notify/users', [UserController::class, 'showNotify']);

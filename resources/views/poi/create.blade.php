@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="pb-5">
-        <form method="POST" action="/poi/create">
+        <form method="POST" action="{{ url('/poi/create')}}">
             @csrf
             <div class="row align-content-start">
                 <div class="col-12">

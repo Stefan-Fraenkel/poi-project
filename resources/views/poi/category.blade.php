@@ -6,7 +6,7 @@
 
 @section('content')
 <div>
-    <form method="POST" action="/poi/search">
+    <form method="POST" action="{{ url('/poi/search')}}">
         @csrf
         <div class="row align-items-start">
         @foreach ($categories as $category)

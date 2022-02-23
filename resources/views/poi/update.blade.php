@@ -6,7 +6,7 @@
 
 @section('content')
 <div>
-    <form method="POST" action="/poi/update">
+    <form method="POST" action="{{ url('/poi/update')}}">
         @csrf
         <label for="poiName" class="form-label">POI Name</label>
         <input name="poi_name" type="text" id="poiName" class="form-control" required value="{{$poi->poi_name}}">

@@ -11,7 +11,7 @@
                 Neue Bewertung für "{{$poi->poi_name}}" schreiben:
             </div>
             <div class="card-body">
-                <form method="POST" action="/poi/rate">
+                <form method="POST" action="{{ url('/poi/rate')}}">
                     @csrf
                     <label for="poiComment" class="form-label">Meine Bewertung:</label>
                     <textarea name="comment" id="poiComment" class="form-control neuRatingInput" required></textarea>
