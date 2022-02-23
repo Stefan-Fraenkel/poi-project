@@ -274,7 +274,6 @@ class POIController extends BaseController
 
     private function getLongPOI ($poi_id)
     {
-        $divisor = $this->countScores($poi_id);
 
         /* real solution:
          * $position = Location::get($this->getIp()); -> but won't work on local server
@@ -287,7 +286,7 @@ class POIController extends BaseController
         $longitude = 10.317022068768733;
         $latitude = 47.71998328790986;
         $query = 'SELECT pois.poi_id, pois.poi_name, pois.street, pois.zipcode, pois.city, pois.description, pois.open, pois.website, pois.photo, pois.long, pois.lat, poi_categories.cat_id, poi_categories.cat_name, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name AS user_name, users.id AS user_id,
-        SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance
+        ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance
         FROM pois
         RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id
         RIGHT JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id
@@ -295,9 +294,10 @@ class POIController extends BaseController
         RIGHT JOIN users ON user_has_poi_ratings.user_id = users.id
         WHERE pois.poi_id = ' . $poi_id . '
         GROUP BY poi_categories.cat_id, pois.poi_id, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name, users.id';
-
         $results = DB::select($query);
+
         $reply = $results[0];
+        $reply->rating = $this->calculateRating($poi_id);
         $reply->cat_names = array();
         $reply->users = array();
 
@@ -305,7 +305,7 @@ class POIController extends BaseController
 
         foreach ($results as $result) {
 
-            $reply->users[$result->user_id] = ['id' => $result->user_id, 'name' => $result->user_name, 'comment' => $result->comment, 'rating' => $result->rating];
+            $reply->users[$result->user_id] = ['id' => $result->user_id, 'name' => $result->user_name, 'comment' => $result->comment, 'score' => $result->score];
 
             $user_photo = User::where('id', $result->user_id) ->first()->profile_photo_path;
 
@@ -323,7 +323,9 @@ class POIController extends BaseController
 
         }
 
-        unset($reply->cat_name, $reply->cat_id, $reply->user_id, $reply->rating, $reply->user_name, $reply->comment);
+        unset($reply->cat_name, $reply->cat_id, $reply->user_id, $reply->score, $reply->user_name, $reply->comment);
+
+        dd($reply);
         return $reply;
     }
 
