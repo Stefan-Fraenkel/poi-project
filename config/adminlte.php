@@ -246,7 +246,7 @@ return [
         ],
         [
             'text' => ' Suche',
-            'url'  => '/category',
+            'url'  => '/poi/search',
             'icon' => 'fas fa-fw fa-search',
             'icon_color' => 'green',
         ],

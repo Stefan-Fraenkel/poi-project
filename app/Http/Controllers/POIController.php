@@ -66,18 +66,7 @@ class POIController extends BaseController
             $result = DB::select($query);
             return $this->index($result, $result[0]->poi_name);
 
-        } else{
-
-            $query = 'select * from poi_categories';
-            $categories = DB::select($query);
-
-            $output = array();
-            foreach ($categories as $category) {
-                $output[$category->cat_id] = $category->cat_name;
-            }
-          //  dd($output);
-            return view('poi.create')->with('categories', $output);
-        }
+        } else return view('poi.create')->with('categories', $this->getCategories());
     }
 
     public function show($poi_id) {
@@ -142,15 +131,7 @@ class POIController extends BaseController
 
     public function categoryIndex() // to dynamically fill the category dropdown with categories from database
     {
-        $query = 'select * from poi_categories';
-        $categories = DB::select($query);
-
-        $output = array();
-        foreach ($categories as $category) {
-            $output[] = $category->cat_name;
-        }
-
-        return view('poi.category')->with('categories', $output);
+        return view('poi.category')->with('categories', $this->getCategories());
     }
 
     public function searchPOIs(Request $request)
@@ -276,10 +257,22 @@ class POIController extends BaseController
         return $base_array;
     }
 
+    private function getCategories() {
+        $query = 'select * from poi_categories';
+        $categories = DB::select($query);
+
+        $output = array();
+        foreach ($categories as $category) {
+            $output[] = $category->cat_name;
+        }
+
+        return $output;
+    }
+
     private function calculateRating($poi_id)
     {
         $divisor = $this->countScores($poi_id);
-        $query = ('select SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating from pois join user_has_poi_ratings on pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.poi_id = ' . $poi_id);
+        $query = ('select ROUND(SUM(user_has_poi_ratings.score)/' . $divisor . ', 2) AS rating from pois join user_has_poi_ratings on pois.poi_id = user_has_poi_ratings.poi_id where user_has_poi_ratings.poi_id = ' . $poi_id);
         $results = DB::select($query);
         return $results[0]->rating;
     }
@@ -354,7 +347,7 @@ class POIController extends BaseController
 
         $longitude = 10.317022068768733;
         $latitude = 47.71998328790986;
-        $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, SUM(user_has_poi_ratings.score)/' . $divisor . ' AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
+        $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, ROUND(SUM(user_has_poi_ratings.score)/' . $divisor . ', 2) AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
         $reply = DB::select($query);
         return $reply[0];
     }
