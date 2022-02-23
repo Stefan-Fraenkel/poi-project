@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Stevebauman\Location\Facades\Location;
+use Throwable;
 
 
 class POIController extends BaseController
@@ -46,7 +48,7 @@ class POIController extends BaseController
     public function create(Request $request)
     {
         if ($request->isMethod('post')) {
-          //  dd($request);
+            //  dd($request);
             $colval = $this->getInsertColVal($request);
             $query = 'INSERT INTO pois (' . $colval['columns'] . ') VALUES (' . $colval['values'] . ')';
             DB::unprepared($query);
@@ -94,18 +96,18 @@ class POIController extends BaseController
     }
 
     public function ratePOI(Request $request)
-        //jeder Nutzer darf jedes POI nur einmal bewerten
     {
         if($request->isMethod('post')) {
             $user_id = Auth::user()->id;
             $score = $request->score;
             $comment = $request->comment;
             $poi_id = $request->poi_id;
+
             if ($comment) {
-                $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score, comment) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '", "' . $comment . '")';
-            }
-            else $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '")';
+                $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score, comment) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '", "' . $comment . '") ON DUPLICATE KEY UPDATE score = ' . $score . ', comment = "' . $comment .'"';
+            } else $query = 'INSERT INTO user_has_poi_ratings (user_id, poi_id, score) VALUES ("' . $user_id . '", "' . $poi_id . '", "' . $score . '") ON DUPLICATE KEY UPDATE score = ' . $score . '"';
             DB::unprepared($query);
+
             $query = 'select * from pois where poi_id = "' . $request->poi_id . '"';
             $result = DB::select($query);
             return $this->index($result, $result[0]->poi_name);
@@ -113,8 +115,6 @@ class POIController extends BaseController
         else {
             $poi_id = explode('/', $request->getRequestUri());
             $poi_id = end($poi_id);
-          //  $query = 'select * from pois where poi_id = "' . $poi_id . '"';
-          //  $result = DB::select($query);
             return view('poi.rate')->with('poi', $this->getLongPOI($poi_id) );
         }
     }
@@ -325,7 +325,6 @@ class POIController extends BaseController
 
         unset($reply->cat_name, $reply->cat_id, $reply->user_id, $reply->score, $reply->user_name, $reply->comment);
 
-        dd($reply);
         return $reply;
     }
 

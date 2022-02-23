@@ -20,6 +20,7 @@ class CreateUserHasPoiRatingsTable extends Migration
             $table->foreign('poi_id')->references('poi_id')->on('pois')->onDelete('cascade');
             $table->float('score'); //laravel creates a double in DB -> this is a bug in laravel
             $table->string('comment')->nullable();
+            $table->unique(['poi_id', 'user_id']);
         });
     }
 
