@@ -4,7 +4,7 @@
 @stop
 
 @section('content')
-    <!--###################################Kopfberiech mit Bild und Adressse ########################-->
+    <!--###################################Kopfbereich mit Bild und Adressse ########################-->
     <div class="container detailContainer">
         <div class="row align-content-center">
             <div class="col-sm-12 col-md-6 pb-2">
@@ -13,7 +13,7 @@
             <div class="col-sm-12 col-md-6 mt-4 text-left adressBlock">
                 <h3>{{$poi->poi_name}}</h3>
                 <span class="pr-3"><i class="fas fa-map-marker-alt pr-2"></i>{{$poi->distance}} km Entfernung</span>
-                <span><i class="fas fa-star pr-2 rating-star"></i>{{$poi->score}} Sternebewertung</span>
+                <span><i class="fas fa-star pr-2 rating-star"></i>{{$poi->rating}} Sternebewertung</span>
                 <hr>
                 <p style="margin-bottom:0;"><b>Adresse</b></p>
                 <span>{{$poi->street}} <br> {{$poi->zipcode}} {{$poi->city}}</span>
@@ -72,7 +72,7 @@
                             <span class="username">
                                 {{$user["name"]}}
                                 <span class="text-muted float-right"><span
-                                        class="pr-1 ratings">{{$user["rating"]}}</span><i
+                                        class="pr-1 ratings">{{$user["score"]}}</span><i
                                         class="fas fa-star pr-2 rating-star"></i></span>
                             </span>{{$user["comment"]}}
                             </div>
@@ -85,7 +85,9 @@
             </div>
             <div class="col-sm-0 col-md-2"></div>
         </div>
-        <a href="/poi" class="btn btn-dark mt-5 poi-more-btn"></i> Zurück zur Übersicht</a>
+        <a href="/poi" class="btn btn-dark mt-5 poi-more-btn">Zurück zur Übersicht</a>
+        <a href="/poi/update/{{$poi->poi_id}}" class="btn btn-outline-dark mt-5 poi-more-btn"><i
+                class="fas fa-pen pr-1"></i> Eintrag bearbeiten</a>
 
     </div>
 

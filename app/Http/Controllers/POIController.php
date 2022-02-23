@@ -46,13 +46,24 @@ class POIController extends BaseController
     public function create(Request $request)
     {
         if ($request->isMethod('post')) {
+          //  dd($request);
             $colval = $this->getInsertColVal($request);
             $query = 'INSERT INTO pois (' . $colval['columns'] . ') VALUES (' . $colval['values'] . ')';
             DB::unprepared($query);
             $query = 'select * from pois where poi_name = "' . $request->poi_name . '"';
             $result = DB::select($query);
             return $this->index($result, $result[0]->poi_name);
-        } else return view('poi.create');
+        } else{
+
+            $query = 'select * from poi_categories';
+            $categories = DB::select($query);
+
+            $output = array();
+            foreach ($categories as $category) {
+                $output[] = $category->cat_name;
+            }
+            return view('poi.create')->with('categories', $output);
+        }
     }
 
     public function show($poi_id) {
@@ -83,6 +94,7 @@ class POIController extends BaseController
     }
 
     public function ratePOI(Request $request)
+        //jeder Nutzer darf jedes POI nur einmal bewerten
     {
         if($request->isMethod('post')) {
             $user_id = Auth::user()->id;
@@ -103,7 +115,7 @@ class POIController extends BaseController
             $poi_id = end($poi_id);
           //  $query = 'select * from pois where poi_id = "' . $poi_id . '"';
           //  $result = DB::select($query);
-            return view('poi.rate')->with('poi', $this->getLongPOI($poi_id) ); //view still needs to be created
+            return view('poi.rate')->with('poi', $this->getLongPOI($poi_id) );
         }
     }
 
@@ -335,12 +347,13 @@ class POIController extends BaseController
     }
 
     private function getInsertColVal(Request $request): array
+    //hier muss noch was gefixt werden
     {
         $data = $request->all();
         $columns = "";
         $values = "";
         foreach ($data as $key => $value) {
-            if ($value && $key != '_token' && $key != 'poi_id') {
+            if ($value && $key != '_token' && $key != 'poi_id' && $key != 'categories') {
                 $columns .= $key . ', ';
                 $values .= '"' . $value . '", ';
             }
