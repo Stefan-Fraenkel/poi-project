@@ -85,8 +85,8 @@
             </div>
             <div class="col-sm-0 col-md-2"></div>
         </div>
-        <a href="/poi" class="btn btn-dark mt-5 poi-more-btn">Zurück zur Übersicht</a>
-        <a href="/poi/update/{{$poi->poi_id}}" class="btn btn-outline-dark mt-5 poi-more-btn"><i
+        <a href="{{ url('/poi')}}" class="btn btn-dark mt-5 poi-more-btn">Zurück zur Übersicht</a>
+        <a href="{{ url('/poi/update/' . $poi->poi_id)}}" class="btn btn-outline-dark mt-5 poi-more-btn"><i
                 class="fas fa-pen pr-1"></i> Eintrag bearbeiten</a>
 
     </div>
