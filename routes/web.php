@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\POIController;
+use App\Http\Controllers\API\AndroidController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\TestController;
@@ -36,6 +37,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/show/{id?}', [POIController::class, 'show']);
         Route::match(['get', 'post'],'/rate/{id?}', [POIController::class, 'ratePOI']);
         Route::match(['get', 'post'],'/update/{id?}', [POIController::class, 'update']);
+        Route::match(['get', 'post'],'/app/{long?}/{lat?}', [POIController::class, 'appRequest']);
         Route::get('/delete/{id?}', [POIController::class, 'destroy']);
         Route::get('/search', [POIController::class, 'categoryIndex']);
         Route::post('/search', [POIController::class, 'searchPOIs']);
@@ -48,7 +50,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('', function () {
         return redirect()->route('index');
     });
-
 
     Route::get('/user/notify/users', [UserController::class, 'showNotify']);
 
