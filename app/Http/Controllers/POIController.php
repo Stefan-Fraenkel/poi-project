@@ -89,9 +89,7 @@ class POIController extends BaseController
         else {
             $poi_id = explode('/', $request->getRequestUri());
             $poi_id = end($poi_id);
-            $query = 'select * from pois where poi_id = "' . $poi_id . '"';
-            $result = DB::select($query);
-            return view('poi.update')->with('poi', $result[0] );
+            return view('poi.update')->with('poi', $this->getLongPOI($poi_id) )->with('categories', $this->getCategories());
         }
     }
 
@@ -262,9 +260,8 @@ class POIController extends BaseController
 
         $output = array();
         foreach ($categories as $category) {
-            $output[] = $category->cat_name;
+            $output[$category->cat_id] = $category->cat_name;
         }
-
         return $output;
     }
 
@@ -320,7 +317,7 @@ class POIController extends BaseController
 
             if (!in_array($result->cat_name, $reply->cat_names))
             {
-                $reply->cat_names[] = $result->cat_name;
+                $reply->cat_names[$result->cat_id] = $result->cat_name;
             }
 
             $i++;
