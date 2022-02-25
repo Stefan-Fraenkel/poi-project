@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Stevebauman\Location\Facades\Location;
 
 
@@ -19,7 +20,12 @@ class POIController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    //hardcoded bs1 Kempten:
+    private $longitude = 10.317022068768733;
+    private $latitude = 47.71998328790986;
+
     private $filters = ['categories', 'rating', 'distance'];
+
 
     /*
      * to add a filter write a function that accepts a request and an array as parameters and returns an array
@@ -42,6 +48,27 @@ class POIController extends BaseController
             array_push($outputs, $entry);
         }
         return view('poi.index')->with('pois', $outputs)->with('category', $category);
+    }
+
+    public function appRequest(Request $request) { //handle requests from android app and update user location data
+
+        $user = Auth::user();
+
+        $lat = explode('/', $request->getRequestUri());
+        $user->lat = end($lat);
+
+        $long = trim($request->getRequestUri(), $user->lat);
+        $long = trim($long, '/');
+
+        $long = explode('/', $long);
+        $user->long = end($long);
+
+        $user->save();
+        $route = explode('app', $request->getRequestUri())[0];
+        $route = explode('/poi/', $route);
+        $route = '/poi/' . $route[1];
+
+        return redirect(url($route));
     }
 
     public function create(Request $request)
@@ -191,23 +218,28 @@ class POIController extends BaseController
         return $resultsRating;
     }
 
+    private function setUserPosition(){
+        if (Auth::user()->long && Auth::user()->lat) {
+            $this->latitude = Auth::user()->lat;
+            $this->longitude = Auth::user()->long;
+        }
+    }
+
     private function distanceFilter(Request $request, $output = null): array
     {
         /* real solution:
          * $position = Location::get($this->getIp()); -> but won't work on local server
-         * $longitude = $position->longitude;
-         * $latitude = $position->latitude;
+         * $this->longitude = $position->longitude;
+         * $this->latitude = $position->latitude;
          */
 
-        //hardcoded bs1 Kempten:
+        $this->setUserPosition();
 
-        $longitude = 10.317022068768733;
-        $latitude = 47.71998328790986;
         $distance = $request->distance;
         if (!is_numeric($distance)) {
             return $output;
         } else {
-            $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance FROM pois HAVING distance <= ' . $distance . ';'; //https://en.wikipedia.org/wiki/Great-circle_distance; https://stackoverflow.com/questions/574691/mysql-great-circle-distance-haversine-formula
+            $query = 'SELECT poi_id, ROUND((acos(cos(radians(' . $this->latitude . '))* cos(radians( pois.lat ))* cos(radians( ' . $this->longitude . ') - radians( pois.long )) + sin(radians( ' . $this->latitude . ')) * sin(radians( pois.lat )))) * 6371, 1) AS distance FROM pois HAVING distance <= ' . $distance . ';'; //https://en.wikipedia.org/wiki/Great-circle_distance; https://stackoverflow.com/questions/574691/mysql-great-circle-distance-haversine-formula
             return DB::select($query);
         }
     }
@@ -278,16 +310,14 @@ class POIController extends BaseController
 
         /* real solution:
          * $position = Location::get($this->getIp()); -> but won't work on local server
-         * $longitude = $position->longitude;
-         * $latitude = $position->latitude;
+         * $this->longitude = $position->longitude;
+         * $this->latitude = $position->latitude;
          */
 
-        //hardcoded bs1 Kempten:
+        $this->setUserPosition();
 
-        $longitude = 10.317022068768733;
-        $latitude = 47.71998328790986;
         $query = 'SELECT pois.poi_id, pois.poi_name, pois.street, pois.zipcode, pois.city, pois.description, pois.open, pois.website, pois.photo, pois.long, pois.lat, poi_categories.cat_id, poi_categories.cat_name, user_has_poi_ratings.score, user_has_poi_ratings.comment, users.name AS user_name, users.id AS user_id,
-        ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance
+        ROUND((acos(cos(radians(' . $this->latitude . '))* cos(radians( pois.lat ))* cos(radians( ' . $this->longitude . ') - radians( pois.long )) + sin(radians( ' . $this->latitude . ')) * sin(radians( pois.lat )))) * 6371, 1) AS distance
         FROM pois
         RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id
         RIGHT JOIN poi_has_categories ON pois.poi_id = poi_has_categories.poi_id
@@ -335,15 +365,13 @@ class POIController extends BaseController
 
         /* real solution:
          * $position = Location::get($this->getIp()); -> but won't work on local server
-         * $longitude = $position->longitude;
-         * $latitude = $position->latitude;
+         * $this->longitude = $position->longitude;
+         * $this->latitude = $position->latitude;
          */
 
-        //hardcoded bs1 Kempten:
+        $this->setUserPosition();
 
-        $longitude = 10.317022068768733;
-        $latitude = 47.71998328790986;
-        $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, ROUND(SUM(user_has_poi_ratings.score)/' . $divisor . ', 2) AS rating, ROUND((acos(cos(radians(' . $latitude . '))* cos(radians( lat ))* cos(radians( ' . $longitude . ') - radians( pois.long )) + sin(radians( ' . $latitude . ')) * sin(radians( lat )))) * 6371, 1) AS distance from pois RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
+        $query = 'select pois.poi_id, pois.poi_name, pois.description, pois.photo, ROUND(SUM(user_has_poi_ratings.score)/' . $divisor . ', 2) AS rating, ROUND((acos(cos(radians(' . $this->latitude . '))* cos(radians( pois.lat ))* cos(radians( ' . $this->longitude . ') - radians( pois.long )) + sin(radians( ' . $this->latitude . ')) * sin(radians( pois.lat )))) * 6371, 1) AS distance from pois RIGHT JOIN user_has_poi_ratings ON pois.poi_id = user_has_poi_ratings.poi_id WHERE pois.poi_id = ' . $poi_id;
         $reply = DB::select($query);
         return $reply[0];
     }
