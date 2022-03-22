@@ -71,16 +71,19 @@
                             <div class="comment-text">
                             <span class="username">
                                 {{$user["name"]}}
+                                <button style="border: none; background-color: transparent;"><i
+                                        class="fas fa-trash deleteBtn"></i></button>
                                 <span class="text-muted float-right"><span
                                         class="pr-1 ratings">{{$user["score"]}}</span><i
                                         class="fas fa-star pr-2 rating-star"></i></span>
                             </span>{{$user["comment"]}}
-                            </div>
 
+                            </div>
                         </div>
                     @endforeach
                 </div>
-                <a href="{{ url('poi/rate/' . $poi->poi_id) }}" class="btn btn-outline-dark mt-3 poi-more-btn float-right"><i
+                <a href="{{ url('poi/rate/' . $poi->poi_id) }}"
+                   class="btn btn-outline-dark mt-3 poi-more-btn float-right"><i
                         class="fas fa-plus addIcon"></i> Neue Bewertung schreiben</a>
             </div>
             <div class="col-sm-0 col-md-2"></div>
@@ -88,6 +91,8 @@
         <a href="/poi" class="btn btn-dark mt-5 poi-more-btn">Zurück zur Übersicht</a>
         <a href="/poi/update/{{$poi->poi_id}}" class="btn btn-outline-dark mt-5 poi-more-btn"><i
                 class="fas fa-pen pr-1"></i> Eintrag bearbeiten</a>
+        <a href="/poi/delete/{{$poi->poi_id}}" class="btn btn-outline-dark mt-5"><i
+                class="fas fa-trash deleteIcon"></i>POI löschen</a>
 
     </div>
 
@@ -99,7 +104,8 @@
                 .categoryChip {
                     width: 30% !important;
                 }
-                .trennerCol{
+
+                .trennerCol {
                     margin: 5% 2% !important;
                 }
             }
@@ -128,7 +134,15 @@
                 background-color: white;
                 box-shadow: 0 0 1em rgba(0, 0, 0, 0.2);
                 padding: 0px 35px 50px 35px;
+            }
 
+            .deleteBtn {
+                color: #a83232;
+                padding-left: 5px;
+            }
+
+            .deleteIcon {
+                padding-right: 5px;
             }
 
             .img-circle {
