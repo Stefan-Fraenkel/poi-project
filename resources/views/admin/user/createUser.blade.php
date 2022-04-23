@@ -25,11 +25,6 @@
                 <input class="form-control" type="text" name="password" id="password">
         </div>
         <br>
-        <div class="w-md-75" style="padding-left: 1%; padding-right: 2%">
-            <label class="label" for="inactive">Gesperrt</label>
-            <input class="form-control" type="checkbox" name="inactive" id="inactive" value="1">
-        </div>
-        <br>
             <div class="w-md-75" style="padding-left: 1%; padding-right: 2%">
             <label class="label" for="roles">Rollen</label>
                 <br>

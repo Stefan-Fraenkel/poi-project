@@ -17,11 +17,6 @@
         </div>
         <br>
         <div class="w-md-75" style="padding-left: 1%; padding-right: 2%">
-            <input type="checkbox" name="inactive" id="inactive" value="1" {{ ($user->inactive) ? 'checked' : '' }}>
-            <label for="inactive">Gesperrt</label>
-        </div>
-        <br>
-        <div class="w-md-75" style="padding-left: 1%; padding-right: 2%">
             <label class="label" for="roles">Rollen</label>
             <br>
 

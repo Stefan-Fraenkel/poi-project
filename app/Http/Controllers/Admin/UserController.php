@@ -118,12 +118,12 @@ class UserController extends BaseController
                 if ($specific_permissions){ //determine wether user specific info is requested -> if so add correspondingly ckecked checkboxs
                     $j = 0;
                     foreach ($specific_permissions as $specific_permission) {
-                        if ($specific_permission->name == $value['fullname']) {
+                        if (isset($value['fullname']) && $specific_permission->name == $value['fullname']) {
                             $output .= '<li>' . $key . ' <input type="checkbox" name="permissions[]" value="' . $value['fullname'] . '"checked></li>';
                             $j++;
                         }
                     }
-                    if (!$j>0){
+                    if (!$j>0 && isset($value['fullname'])){
                         $output .= '<li>' . $key . ' <input type="checkbox" name="permissions[]" value="' . $value['fullname'] . '"></li>';
                     }
                 }

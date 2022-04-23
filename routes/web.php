@@ -23,7 +23,7 @@ Route::match(['get', 'post'], '/register', function () {
 });
 
 //Route::get('/test', [POIController::class, 'getlongPOI']);
-Route::get('/perm', [TestController::class, 'testFunction']);
+//Route::get('/perm', [TestController::class, 'testFunction']);
 
 
 //Route::get('/setup', [POIController::class, 'initialSetup']);
