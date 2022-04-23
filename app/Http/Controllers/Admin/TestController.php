@@ -101,7 +101,7 @@ class TestController extends BaseController
      //   $value = $request->session()-> get('password_hash_web');
       //  dd($value);
 
-    return view('legacy.index');
+   // return view('legacy.index');
 
       //  $session = session('key');
        // $value = $session()->get('key');

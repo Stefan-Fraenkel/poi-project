@@ -261,6 +261,7 @@ return [
             'url'  => '/poi/create',
             'icon' => 'fas fa-fw fa-plus',
             'icon_color' => 'purple',
+            'can'  => ['admin'],
         ],
 
         ['header' => 'account_settings'],
@@ -275,6 +276,7 @@ return [
             'url'  => '/admin/user',
             'icon' => 'fas fa-fw fa-users',
             'icon_color' => 'lightblue',
+            'can'  => ['admin'],
         ],
 
            ],

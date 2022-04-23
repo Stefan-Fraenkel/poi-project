@@ -71,7 +71,9 @@
                             <div class="comment-text">
                             <span class="username">
                                 {{$user["name"]}}
-                                <a href="{{ url('/poi/delete_r/' . $poi->poi_id . '/' . $user["id"])}}" class="fas fa-trash deleteBtn"></a>
+                                @if(Auth::user()->admin)
+                                    <a href="{{ url('/poi/delete_r/' . $poi->poi_id . '/' . $user["id"])}}" class="fas fa-trash deleteBtn"></a>
+                                @endif
                                 <span class="text-muted float-right"><span
                                         class="pr-1 ratings">{{$user["score"]}}</span><i
                                         class="fas fa-star pr-2 rating-star"></i></span>
@@ -88,12 +90,12 @@
             <div class="col-sm-0 col-md-2"></div>
         </div>
         <a href="{{ url('/poi')}}" class="btn btn-dark mt-5 poi-more-btn">Zurück zur Übersicht</a>
-        <a href="{{ url('/poi/update/' . $poi->poi_id)}}" class="btn btn-outline-dark mt-5 poi-more-btn"><i
-                class="fas fa-pen pr-1"></i> Eintrag bearbeiten</a>
-        <a href="/poi/delete/{{$poi->poi_id}}" class="btn btn-outline-dark mt-5"><i
-                class="fas fa-trash deleteIcon"></i>POI löschen</a>
-
-
+        @if(Auth::user()->admin)
+            <a href="{{ url('/poi/update/' . $poi->poi_id)}}" class="btn btn-outline-dark mt-5 poi-more-btn"><i
+                    class="fas fa-pen pr-1"></i> Eintrag bearbeiten</a>
+            <a href="/poi/delete/{{$poi->poi_id}}" class="btn btn-outline-dark mt-5"><i
+                    class="fas fa-trash deleteIcon"></i>POI löschen</a>
+        @endif
     </div>
 
     @push('css')
