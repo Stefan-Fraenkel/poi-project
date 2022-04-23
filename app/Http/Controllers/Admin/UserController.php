@@ -183,7 +183,7 @@ class UserController extends BaseController
             $user->password = Hash::make($password);
             $user->email = $email;
             $user->name = $name;
-            $user->inactive = ($inactive) ? 1 : 0;
+         //   $user->inactive = ($inactive) ? 1 : 0;
 
             $roles_notify = null;
             if ($roles) {
@@ -266,7 +266,7 @@ class UserController extends BaseController
         $name = $request->name;
         $email = $request->email;
         $password = $request->password;
-        $inactive = $request->inactive;
+      //  $inactive = $request->inactive;
         $roles = $request->roles;
         $permissions = $request->permissions;
         $id = $request->id;
@@ -286,7 +286,7 @@ class UserController extends BaseController
             $user->password = Hash::make($password);
         }
 
-        $user->inactive = ($inactive) ? 1 : 0;
+      //  $user->inactive = ($inactive) ? 1 : 0;
 
         $user->syncRoles(); //to remove all roles
         if ($roles){
