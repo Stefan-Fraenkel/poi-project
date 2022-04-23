@@ -155,7 +155,6 @@ class POIController extends BaseController
 
     public function deleteRating($poi, $user)
     {
-        dd(Auth::user()->admin);
         $user_id = $user;
         $poi_id = $poi;
         $query = 'delete from user_has_poi_ratings where poi_id = "' . $poi_id . '" AND user_id = "' . $user_id . '"';
