@@ -41,7 +41,6 @@ class UserController extends BaseController
 
         $permissions_sorted = $this->indexPermissions();
         $permissions_sorted = $this->addPermissionGraphics($permissions_sorted);
-//dd($permissions_sorted);
         return view('admin.user.index')
             ->with('permissions', $permissions_sorted)
             ->with('roles', Role::all());
@@ -171,7 +170,6 @@ class UserController extends BaseController
             $name = $request->name;
             $email = $request->email;
             $password = $request->password;
-           // $inactive = $request->inactive;
             $roles = $request->roles;
             $permissions = $request->permissions;
 
@@ -183,7 +181,6 @@ class UserController extends BaseController
             $user->password = Hash::make($password);
             $user->email = $email;
             $user->name = $name;
-         //   $user->inactive = ($inactive) ? 1 : 0;
 
             $roles_notify = null;
             if ($roles) {
@@ -209,8 +206,6 @@ class UserController extends BaseController
             $notify_subject = $user->id;
             $notify_type = "user_created";
             $notify_body = "<b>Nutzername:</b> " . $user->name . "<br>";
-
-            Redis::set('user:' . $user->id . ':permissions', json_encode($user->getAllPermissions()->toArray()));
 
             if (!$permissions_notify == null || !$roles_notify == null) {
                 if (!$permissions_notify == null) {
@@ -266,7 +261,6 @@ class UserController extends BaseController
         $name = $request->name;
         $email = $request->email;
         $password = $request->password;
-      //  $inactive = $request->inactive;
         $roles = $request->roles;
         $permissions = $request->permissions;
         $id = $request->id;
@@ -286,8 +280,6 @@ class UserController extends BaseController
             $user->password = Hash::make($password);
         }
 
-      //  $user->inactive = ($inactive) ? 1 : 0;
-
         $user->syncRoles(); //to remove all roles
         if ($roles){
             foreach ($roles as $role) {
@@ -304,7 +296,6 @@ class UserController extends BaseController
 
         $user->save();
 
-        Redis::set('user:' . $user->id . ':permissions', json_encode($user->getAllPermissions()->toArray()));
     }
 
     public function deleteUser(Request $request)
