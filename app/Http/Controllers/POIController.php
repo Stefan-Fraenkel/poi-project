@@ -153,6 +153,15 @@ class POIController extends BaseController
         return $this->index();
     }
 
+    public function deleteRating($poi, $user)
+    {
+        $user_id = $user;
+        $poi_id = $poi;
+        $query = 'delete from user_has_poi_ratings where poi_id = "' . $poi_id . '" AND user_id = "' . $user_id . '"';
+        DB::select($query);
+        return back();
+    }
+
     public function categoryIndex() // to dynamically fill the category dropdown with categories from database
     {
         return view('poi.category')->with('categories', $this->getCategories());

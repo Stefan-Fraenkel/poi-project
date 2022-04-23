@@ -71,8 +71,7 @@
                             <div class="comment-text">
                             <span class="username">
                                 {{$user["name"]}}
-                                <button style="border: none; background-color: transparent;"><i
-                                        class="fas fa-trash deleteBtn"></i></button>
+                                <a href="{{ url('/poi/delete_r/' . $poi->poi_id . '/' . $user["id"])}}" class="fas fa-trash deleteBtn"></a>
                                 <span class="text-muted float-right"><span
                                         class="pr-1 ratings">{{$user["score"]}}</span><i
                                         class="fas fa-star pr-2 rating-star"></i></span>
@@ -93,6 +92,7 @@
                 class="fas fa-pen pr-1"></i> Eintrag bearbeiten</a>
         <a href="/poi/delete/{{$poi->poi_id}}" class="btn btn-outline-dark mt-5"><i
                 class="fas fa-trash deleteIcon"></i>POI löschen</a>
+
 
     </div>
 

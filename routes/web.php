@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/show/{id?}', [POIController::class, 'show']);
         Route::match(['get', 'post'],'/rate/{id?}', [POIController::class, 'ratePOI']);
         Route::match(['get', 'post'],'/update/{id?}', [POIController::class, 'update']);
+        Route::get('/delete_r/{poi?}/{user?}', [POIController::class, 'deleteRating']);
         Route::match(['get', 'post'],'/app/{long?}/{lat?}', [POIController::class, 'appRequest']);
         Route::get('/delete/{id?}', [POIController::class, 'destroy']);
         Route::get('/search', [POIController::class, 'categoryIndex']);
