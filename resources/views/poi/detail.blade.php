@@ -1,6 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
+    <h2 class="h4 font-weight-bold" id="demo">Detailansicht: {{$poi->poi_name}}</h2>
 @stop
 
 @section('content')
@@ -97,7 +98,7 @@
                     class="fas fa-trash deleteIcon"></i>POI löschen</a>
         @endif
     </div>
-
+    &nbsp
     @push('css')
 
         <style>
