@@ -26,7 +26,6 @@ class POIController extends BaseController
 
     private $filters = ['categories', 'rating', 'distance'];
 
-
     /*
      * to add a filter write a function that accepts a request and an array as parameters and returns an array
      * standard value for array should be "null"
@@ -436,9 +435,10 @@ class POIController extends BaseController
 
     public function initialSetup () {
 
-        /* new new:
 
-        $entries = [['name' => 'Stefan Fränkel', 'email' => 'stefan@genxtreme.de', 'password' => '1234'], ['name' => 'Theresa Schwarzmann', 'email' => 'Theresa-Sch@t-online.de', 'password' => '1234'], ['name' => 'Tom Test', 'email' => 'Tom@test.de', 'password' => '1234'], ['name' => 'Max Mustermann', 'email' => 'Max@muster.de', 'password' => '1234'], ['name' => 'Klaus Probieren', 'email' => 'klaus@probieren.de', 'password' => '1234']];
+
+/*
+        $entries = [['name' => 'First Last', 'email' => 'test@test.com', 'password' => '1234'], ['name' => 'First Last', 'email' => 'first@test.com', 'password' => '1234'], ['name' => 'Tom Test', 'email' => 'Tom@test.de', 'password' => '1234'], ['name' => 'Max Mustermann', 'email' => 'Max@muster.de', 'password' => '1234'], ['name' => 'Klaus Probieren', 'email' => 'klaus@probieren.de', 'password' => '1234']];
 
         foreach ($entries as $entry) {
             $user = new User();
@@ -458,7 +458,7 @@ class POIController extends BaseController
         DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (4, 4)');
         DB::unprepared('INSERT INTO poi_has_categories (poi_id, cat_id) VALUES (2, 5), (5, 5)');
 
-        */
+      */
 
         return view('dashboard');
 
