@@ -61,13 +61,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::prefix('admin')->group(function () {
 
         //users
-       // Route::group(['middleware' => ['can:admin.users.read']], function () {
+        Route::group(['middleware' => ['can:admin.users.read']], function () {
             Route::prefix('user')->group(function () {
                 Route::get('', [UserController::class, 'index'])->name('admin.user.index');
                 Route::match(['get', 'post'],'/create', [UserController::class, 'createUser']);
                 Route::match(['get', 'post'], '/edit/{id?}', [UserController::class, 'editUser']);
             });
-       // });
+        });
 
         //permissions
         Route::group(['middleware' => ['can:admin.users.permissions.read']], function () {
