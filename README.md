@@ -1,1 +1,1 @@
-![poi-gb_full](https://user-images.githubusercontent.com/68894295/227721527-e93ce8c6-2c90-4345-a385-1e5212efcf07.jpg)
+![poi-gb_big](https://user-images.githubusercontent.com/68894295/227721590-15cdd122-ad09-4e36-9e30-bf7093d27b50.png)
